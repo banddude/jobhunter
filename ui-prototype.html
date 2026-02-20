@@ -1,0 +1,3958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ApplyPilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-0: #08080a;
+  --bg-1: #0e0e12;
+  --bg-2: #151519;
+  --bg-3: #1c1c22;
+  --bg-4: #24242c;
+  --border: #2a2a35;
+  --border-bright: #38384a;
+  --text: #ececf0;
+  --text-2: #a0a0b0;
+  --text-3: #62627a;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-dim: rgba(99,102,241,0.12);
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --orange: #fb923c;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 220px;
+  --titlebar-h: 38px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --header-h: calc(var(--titlebar-h) + var(--safe-top));
+  --font: 'Manrope', -apple-system, sans-serif;
+  --mono: 'Source Code Pro', monospace;
+}
+
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: var(--font);
+  background: var(--bg-0);
+  color: var(--text);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ TITLEBAR ═══ */
+.titlebar {
+  height: var(--header-h);
+  padding-top: var(--safe-top);
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-app-region: drag;
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+}
+.titlebar-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.traffic-lights {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  display: flex; gap: 8px;
+  -webkit-app-region: no-drag;
+}
+.traffic-light {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: none; cursor: pointer; opacity: 0.85;
+}
+.traffic-light:hover { opacity: 1; }
+.tl-close { background: #ff5f57; }
+.tl-min { background: #febc2e; }
+.tl-max { background: #28c840; }
+.mobile-nav-toggle {
+  position: absolute;
+  left: 10px;
+  top: calc(var(--safe-top) + (var(--titlebar-h) / 2));
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-2);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+.mobile-nav-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-bright);
+}
+.mobile-nav-toggle svg { width: 18px; height: 18px; }
+
+/* ═══ LAYOUT ═══ */
+.app {
+  display: flex;
+  height: calc(100dvh - var(--header-h));
+  margin-top: var(--header-h);
+}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  gap: 4px;
+  overflow-y: auto;
+  transition: transform 0.2s ease;
+}
+.sidebar-brand {
+  padding: 8px 12px 16px;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-brand svg { opacity: 0.7; }
+.sidebar-section {
+  padding: 12px 12px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  user-select: none;
+}
+.nav-item:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+.nav-item.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.nav-item svg {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--bg-4);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-family: var(--mono);
+}
+.nav-item.active .nav-badge {
+  background: rgba(99,102,241,0.2);
+  color: var(--accent);
+}
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.sidebar-footer .avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+}
+.sidebar-backdrop {
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 160;
+}
+body.sidebar-open .sidebar-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ═══ MAIN ═══ */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-0);
+}
+.view {
+  display: none;
+  padding: 28px 32px;
+  animation: fadeIn 0.2s ease;
+}
+.view.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ PAGE HEADERS ═══ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+/* ═══ BUTTONS ═══ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--bg-4);
+  border-color: var(--border-bright);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+}
+.btn-ghost:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-group { display: flex; gap: 6px; }
+
+/* ═══ CARDS ═══ */
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ═══ STAT CARDS ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.stat-card.sc-accent::after { background: var(--accent); }
+.stat-card.sc-green::after { background: var(--green); }
+.stat-card.sc-yellow::after { background: var(--yellow); }
+.stat-card.sc-red::after { background: var(--orange); }
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  font-family: var(--mono);
+}
+.stat-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+/* ═══ PIPELINE VIS ═══ */
+.pipeline-flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 24px 0;
+  overflow-x: auto;
+}
+.pipeline-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+  position: relative;
+}
+.stage-node {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 1;
+}
+.stage-node svg { width: 20px; height: 20px; color: var(--text-3); }
+.pipeline-stage.done .stage-node {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+.pipeline-stage.done .stage-node svg { color: var(--green); }
+.pipeline-stage.active .stage-node {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 20px rgba(99,102,241,0.2);
+}
+.pipeline-stage.active .stage-node svg { color: var(--accent); }
+.stage-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-align: center;
+}
+.pipeline-stage.active .stage-label { color: var(--accent); }
+.pipeline-stage.done .stage-label { color: var(--green); }
+.stage-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.pipeline-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  min-width: 40px;
+  margin-top: -28px;
+}
+.pipeline-connector.done { background: var(--green); }
+
+/* ═══ ACTIVITY FEED ═══ */
+.activity-list { display: flex; flex-direction: column; gap: 0; }
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.activity-dot.green { background: var(--green); }
+.activity-dot.blue { background: var(--accent); }
+.activity-dot.yellow { background: var(--yellow); }
+.activity-dot.red { background: var(--red); }
+.activity-text {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.activity-text strong { color: var(--text); font-weight: 600; }
+.activity-time {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--mono);
+}
+
+/* ═══ DASHBOARD GRID ═══ */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
+
+/* ═══ JOBS TABLE ═══ */
+.table-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  flex: 1;
+  max-width: 320px;
+  transition: border-color 0.15s;
+}
+.search-box:focus-within { border-color: var(--accent); }
+.search-box svg { width: 14px; height: 14px; color: var(--text-3); flex-shrink: 0; }
+.search-box input {
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+}
+.search-box input::placeholder { color: var(--text-3); }
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-pill:hover {
+  border-color: var(--border-bright);
+  color: var(--text);
+}
+.filter-pill.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.jobs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.jobs-table-wrap { overflow-x: auto; }
+.jobs-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-0);
+  cursor: default;
+  user-select: none;
+}
+.jobs-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.jobs-table tr { transition: background 0.1s; cursor: pointer; }
+.jobs-table tbody tr:hover { background: var(--bg-2); }
+.job-title-cell {
+  font-weight: 600;
+  color: var(--text);
+}
+.job-company {
+  color: var(--text-2);
+  font-weight: 400;
+  font-size: 12px;
+  margin-top: 2px;
+}
+.job-location { color: var(--text-2); font-size: 12px; }
+.job-salary {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+/* Score badge */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 24px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+.score-high { background: var(--green-dim); color: var(--green); }
+.score-mid { background: var(--yellow-dim); color: var(--yellow); }
+.score-low { background: var(--red-dim); color: var(--red); }
+.score-none { background: var(--bg-3); color: var(--text-3); }
+
+/* Status pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.status-discovered { background: var(--bg-4); color: var(--text-3); }
+.status-enriched { background: var(--accent-dim); color: var(--accent); }
+.status-scored { background: var(--yellow-dim); color: var(--yellow); }
+.status-tailored { background: rgba(52,211,153,0.12); color: var(--green); }
+.status-applied { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Tier badge */
+.tier-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-4);
+  color: var(--text-3);
+}
+.tier-1 { background: var(--accent-dim); color: var(--accent); }
+.tier-2 { background: var(--yellow-dim); color: var(--yellow); }
+.tier-3 { background: var(--bg-4); color: var(--text-3); }
+
+/* ═══ JOB DETAIL PANEL ═══ */
+.detail-panel {
+  display: none;
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  bottom: 0;
+  width: 540px;
+  background: var(--bg-1);
+  border-left: 1px solid var(--border);
+  z-index: 50;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+}
+.detail-panel.open { display: block; }
+.detail-backdrop {
+  position: fixed;
+  inset: var(--header-h) 0 0 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 45;
+}
+body.detail-open .detail-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.detail-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-1);
+  z-index: 1;
+}
+.detail-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: none; border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+.detail-close:hover { background: var(--bg-3); color: var(--text); }
+.detail-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+  padding-right: 32px;
+}
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 8px;
+}
+.detail-body { padding: 24px; }
+.detail-section {
+  margin-bottom: 24px;
+}
+.detail-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.detail-score-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.detail-score-num {
+  font-family: var(--mono);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+.detail-score-label {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.detail-score-reason {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.md-block > :first-child { margin-top: 0; }
+.md-block > :last-child { margin-bottom: 0; }
+.md-block p { margin: 0 0 10px; }
+.md-block ul,
+.md-block ol {
+  margin: 0 0 10px 18px;
+  padding: 0;
+}
+.md-block li { margin: 0 0 4px; }
+.md-block h1,
+.md-block h2,
+.md-block h3,
+.md-block h4,
+.md-block h5,
+.md-block h6 {
+  margin: 0 0 8px;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+.md-block h1 { font-size: 18px; }
+.md-block h2 { font-size: 16px; }
+.md-block h3 { font-size: 14px; }
+.md-block h4,
+.md-block h5,
+.md-block h6 { font-size: 13px; }
+.md-block blockquote {
+  margin: 0 0 10px;
+  padding: 0 0 0 10px;
+  border-left: 2px solid var(--border);
+  color: var(--text-2);
+}
+.md-block pre {
+  margin: 0 0 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  overflow-x: auto;
+}
+.md-block code,
+.md-inline code {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg-3);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+.md-block pre code {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+.detail-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-1);
+}
+
+/* ═══ PIPELINE VIEW ═══ */
+.pipeline-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.pipeline-card:hover { border-color: var(--border-bright); }
+.pipeline-card-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pipeline-card-icon svg { width: 22px; height: 22px; }
+.pipeline-card-info { flex: 1; }
+.pipeline-card-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.pipeline-card-desc { font-size: 12px; color: var(--text-3); }
+.pipeline-card-stats {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  text-align: right;
+  margin-right: 12px;
+}
+.progress-bar {
+  width: 120px;
+  height: 4px;
+  background: var(--bg-4);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ═══ SETTINGS ═══ */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 500px;
+}
+.settings-nav {
+  border-right: 1px solid var(--border);
+  padding: 8px;
+}
+.settings-nav-item {
+  display: block;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.settings-nav-item:hover { background: var(--bg-3); color: var(--text); }
+.settings-nav-item.active { background: var(--accent-dim); color: var(--accent); }
+.settings-content { padding: 24px; }
+.settings-section { margin-bottom: 28px; }
+.settings-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: -0.3px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text-3); }
+textarea.form-input { resize: vertical; min-height: 80px; }
+
+/* Tags input */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  min-height: 38px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tag-remove {
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 14px;
+  line-height: 1;
+}
+.tag-remove:hover { opacity: 1; }
+.skills-boundary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.skills-boundary-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  padding: 10px;
+}
+.skills-boundary-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.skills-boundary-row-head .form-input {
+  flex: 1;
+}
+.board-group {
+  margin-bottom: 10px;
+}
+.board-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 8px;
+}
+.board-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.board-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, opacity 0.15s;
+}
+.board-option:hover {
+  border-color: var(--border-bright);
+  background: var(--bg-4);
+}
+.board-option.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.board-option input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.board-pill-text {
+  min-width: 0;
+}
+.board-pill-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.board-pill-note {
+  display: block;
+  font-size: 10px;
+  color: var(--text-3);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.board-option.blocked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.board-option.blocked:hover {
+  border-color: var(--border);
+  background: var(--bg-3);
+}
+.capsolver-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.capsolver-input-row .form-input {
+  flex: 1;
+}
+.capsolver-status {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.capsolver-help {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+.capsolver-help-btn {
+  padding: 2px 8px;
+  min-height: 22px;
+}
+
+/* ═══ SETUP / WIZARD ═══ */
+.setup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg-0);
+  align-items: center;
+  justify-content: center;
+}
+.setup-overlay.open { display: flex; }
+.setup-container {
+  width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.setup-progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.setup-step-dot {
+  flex: 1;
+  height: 3px;
+  background: var(--bg-4);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.setup-step-dot.done { background: var(--green); }
+.setup-step-dot.current { background: var(--accent); }
+.setup-step-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  margin-bottom: 6px;
+}
+.setup-step-desc {
+  font-size: 14px;
+  color: var(--text-3);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+.setup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+}
+
+/* ═══ DROP ZONE ═══ */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 48px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.drop-zone:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.drop-zone-text {
+  font-size: 14px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.drop-zone-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 8px;
+}
+
+/* ═══ SYSTEM SETUP ═══ */
+.system-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+.check-icon {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.check-ok { background: var(--green-dim); color: var(--green); }
+.check-missing { background: var(--red-dim); color: var(--red); }
+.check-loading { background: var(--yellow-dim); color: var(--yellow); }
+.check-name { font-weight: 600; font-size: 13px; }
+.check-detail { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.check-action {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 980px) {
+  html, body {
+    min-height: 100%;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .app {
+    height: auto;
+    min-height: calc(100dvh - var(--header-h));
+  }
+  .main {
+    min-height: calc(100dvh - var(--header-h));
+    overflow: visible;
+  }
+  .traffic-lights { display: none; }
+  .mobile-nav-toggle { display: inline-flex; }
+  .view { padding: 12px 12px 18px; }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .btn-group {
+    width: auto;
+    flex-wrap: nowrap;
+  }
+  .btn-group .btn {
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+  .page-title { font-size: 16px; }
+  .page-subtitle { font-size: 11px; margin-top: 1px; }
+  .card { padding: 10px; border-radius: 10px; }
+  .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    padding: 7px 6px;
+    border-radius: 9px;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .stat-value { font-size: 15px; line-height: 1.15; }
+  .stat-sub { display: none; }
+  .btn { font-size: 10px; padding: 4px 8px; border-radius: 7px; }
+  .btn-sm { font-size: 10px; padding: 3px 7px; }
+  .btn svg { width: 12px; height: 12px; }
+  .card-header {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .search-box {
+    width: 100%;
+    max-width: none;
+  }
+  .table-controls { gap: 6px; margin-bottom: 10px; }
+  .filter-pill { font-size: 10px; padding: 4px 8px; }
+  .sidebar {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    bottom: 0;
+    z-index: 170;
+    width: min(82vw, 320px);
+    transform: translateX(-100%);
+    box-shadow: 12px 0 28px rgba(0, 0, 0, 0.45);
+  }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+  .main { width: 100%; }
+  .detail-panel { width: 100%; }
+  .detail-header,
+  .detail-body,
+  .detail-actions {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .detail-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .detail-score-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pipeline-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 6px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .pipeline-connector {
+    display: block;
+    flex: 0 0 6px;
+    min-width: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    margin: -16px 1px 0;
+  }
+  .pipeline-stage {
+    flex: 0 0 auto;
+    min-width: 52px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    gap: 2px;
+    scroll-snap-align: start;
+  }
+  .stage-node {
+    width: 22px;
+    height: 22px;
+    border-width: 1px;
+  }
+  .stage-node svg {
+    width: 11px;
+    height: 11px;
+  }
+  .stage-label {
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  .stage-count { font-size: 9px; }
+  .pipeline-card {
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
+    border-radius: 10px;
+  }
+  .pipeline-card-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+  .pipeline-card-icon svg { width: 16px; height: 16px; }
+  .pipeline-card-name { font-size: 12px; margin-bottom: 1px; }
+  .pipeline-card-desc {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pipeline-card {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .pipeline-card-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .pipeline-card-stats {
+    width: 74px;
+    flex: 0 0 74px;
+    margin-right: 0;
+    text-align: right;
+    font-size: 10px;
+  }
+  .progress-bar { width: 74px; height: 3px; margin-top: 4px; }
+  #view-pipeline .pipeline-card .btn {
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+  .settings-grid { grid-template-columns: 1fr; }
+  .settings-nav {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px;
+  }
+  .settings-nav-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .settings-content { padding: 16px; }
+  .form-row { grid-template-columns: 1fr; }
+  .board-pill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .board-option {
+    padding: 6px 7px;
+    gap: 6px;
+  }
+  .board-pill-name { font-size: 11px; }
+  .board-pill-note { font-size: 9px; }
+  .capsolver-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .capsolver-input-row .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .setup-container {
+    width: min(100%, 640px);
+    max-height: 100vh;
+    padding: 16px;
+  }
+  .setup-overlay { align-items: flex-start; }
+  .drop-zone { padding: 30px 16px; }
+  .pipeline-options-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .pipeline-options-controls {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pipeline-options .form-input {
+    width: 52px !important;
+    padding: 3px 6px !important;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 760px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-pill { justify-content: center; }
+  .jobs-table-wrap { overflow: visible; }
+  .jobs-table,
+  .jobs-table tbody,
+  .jobs-table tr,
+  .jobs-table td {
+    display: block;
+    width: 100%;
+  }
+  .jobs-table thead { display: none; }
+  .jobs-table tr {
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 8px;
+    background: var(--bg-2);
+  }
+  .jobs-table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .jobs-table td:last-child { border-bottom: none; }
+  .jobs-table td::before {
+    content: attr(data-label);
+    color: var(--text-3);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    flex: 0 0 62px;
+    padding-top: 2px;
+  }
+  .jobs-table td[data-label="Position"] {
+    display: block;
+    padding-bottom: 8px;
+  }
+  .jobs-table td[data-label="Position"]::before {
+    display: block;
+    margin-bottom: 6px;
+    padding-top: 0;
+  }
+  .detail-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .setup-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .setup-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .btn,
+  .nav-item,
+  .filter-pill,
+  .settings-nav-item,
+  .check-action,
+  .detail-close,
+  .mobile-nav-toggle {
+    min-height: 32px;
+  }
+  .btn,
+  .nav-item,
+  .settings-nav-item { padding-top: 6px; padding-bottom: 6px; }
+  .filter-pill { padding: 5px 8px; }
+  .form-input,
+  .search-box { min-height: 34px; }
+  .detail-close {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div class="titlebar">
+  <button id="mobile-nav-toggle" class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" onclick="toggleSidebar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </button>
+  <div class="traffic-lights">
+    <button class="traffic-light tl-close" type="button" onclick="windowControlUnavailable()"></button>
+    <button class="traffic-light tl-min" type="button" onclick="windowControlUnavailable()"></button>
+    <button class="traffic-light tl-max" type="button" onclick="windowControlUnavailable()"></button>
+  </div>
+  <span class="titlebar-text">ApplyPilot</span>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar-nav">
+    <div class="sidebar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>ApplyPilot</span>
+    </div>
+
+    <div class="sidebar-section">Navigate</div>
+    <a class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a class="nav-item" data-view="jobs" onclick="switchView('jobs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <span>Jobs</span>
+      <span class="nav-badge" id="nav-job-count">--</span>
+    </a>
+    <a class="nav-item" data-view="pipeline" onclick="switchView('pipeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Pipeline</span>
+    </a>
+
+    <div class="sidebar-section">Configure</div>
+    <a class="nav-item" data-view="settings" onclick="switchView('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+    <a class="nav-item" onclick="openSetup()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span>Setup</span>
+    </a>
+
+    <div class="sidebar-footer">
+      <div class="avatar" id="sidebar-avatar">--</div>
+      <span id="sidebar-user-name">Profile</span>
+    </div>
+  </nav>
+  <div class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ═══ DASHBOARD VIEW ═══ -->
+    <section class="view active" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Loading dashboard...</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="switchView('pipeline')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Pipeline
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card sc-accent">
+          <div class="stat-label">Discovered</div>
+          <div class="stat-value" style="color:var(--accent)">--</div>
+          <div class="stat-sub">--</div>
+        </div>
+        <div class="stat-card sc-yellow">
+          <div id="stats-scored-label" class="stat-label">Scored</div>
+          <div class="stat-value" style="color:var(--yellow)">--</div>
+          <div class="stat-sub">--</div>
+        </div>
+        <div class="stat-card sc-green">
+          <div class="stat-label">Tailored</div>
+          <div class="stat-value" style="color:var(--green)">--</div>
+          <div class="stat-sub">--</div>
+        </div>
+        <div class="stat-card sc-red">
+          <div class="stat-label">Applied</div>
+          <div class="stat-value" style="color:var(--orange)">--</div>
+          <div class="stat-sub">--</div>
+        </div>
+      </div>
+
+      <!-- Pipeline visualization -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <span class="card-title">Pipeline Status</span>
+          <button class="btn btn-sm btn-ghost" onclick="switchView('pipeline')">View details</button>
+        </div>
+        <div id="dashboard-pipeline-flow" class="pipeline-flow"></div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Top Matches -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Matches</span>
+            <button class="btn btn-sm btn-ghost" onclick="switchView('jobs')">View all</button>
+          </div>
+          <div id="top-matches-list" style="display:flex;flex-direction:column;gap:0">
+            <div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Activity</span>
+          </div>
+          <div class="activity-list" id="activity-feed">
+            <div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ JOBS VIEW ═══ -->
+    <section class="view" id="view-jobs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Jobs</div>
+          <div class="page-subtitle">Loading jobs...</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="exportCSV()">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="table-controls">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search jobs, companies, locations..." id="job-search" oninput="filterJobs()">
+        </div>
+        <div class="filter-pill active" onclick="toggleFilter(this,'all')" data-filter="all">All</div>
+        <div id="jobs-filter-high" class="filter-pill" onclick="toggleFilter(this,'high')" data-filter="high">High</div>
+        <div id="jobs-filter-mid" class="filter-pill" onclick="toggleFilter(this,'mid')" data-filter="mid">Mid</div>
+        <div id="jobs-filter-low" class="filter-pill" onclick="toggleFilter(this,'low')" data-filter="low">Low</div>
+        <div class="filter-pill" onclick="toggleFilter(this,'remote')" data-filter="remote">Remote</div>
+        <div class="filter-pill" onclick="toggleFilter(this,'applied')" data-filter="applied">Applied</div>
+      </div>
+
+      <div class="jobs-table-wrap">
+        <table class="jobs-table">
+          <thead>
+            <tr>
+              <th style="width:30px">T</th>
+              <th>Position</th>
+              <th>Location</th>
+              <th>Salary</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══ PIPELINE VIEW ═══ -->
+    <section class="view" id="view-pipeline">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Pipeline Controls</div>
+          <div class="page-subtitle">Run individual stages or the full pipeline</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="runAllStages()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run All Stages
+          </button>
+        </div>
+      </div>
+
+      <div id="pipeline-card-list"></div>
+
+      <div class="card pipeline-options" style="margin-top:20px;padding:16px">
+        <div class="pipeline-options-row" style="display:flex;align-items:center;gap:12px">
+          <label style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="pipeline-dry-run" type="checkbox" style="accent-color:var(--accent)"> Dry run mode
+          </label>
+          <span style="font-size:12px;color:var(--text-3)">(Preview applications without submitting)</span>
+          <div class="pipeline-options-controls" style="margin-left:auto;display:flex;gap:12px;align-items:center">
+            <label style="font-size:12px;color:var(--text-2)">Min score:</label>
+            <input id="pipeline-min-score" type="number" value="" min="1" max="10" class="form-input" style="width:60px;padding:5px 8px" onchange="handlePipelineMinScoreChange()">
+            <label style="font-size:12px;color:var(--text-2)">Workers:</label>
+            <input id="pipeline-workers" type="number" value="1" min="1" class="form-input" style="width:60px;padding:5px 8px">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SETTINGS VIEW ═══ -->
+    <section class="view" id="view-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-subtitle">Profile, search configuration, and Gemini CLI status</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+      </div>
+
+      <div class="settings-grid">
+        <div class="settings-nav">
+          <div class="settings-nav-item active" onclick="switchSettingsTab(this,'settings-profile')">Profile</div>
+          <div class="settings-nav-item" onclick="switchSettingsTab(this,'settings-search')">Search Queries</div>
+          <div class="settings-nav-item" onclick="switchSettingsTab(this,'settings-gemini')">Gemini CLI</div>
+          <div class="settings-nav-item" onclick="switchSettingsTab(this,'settings-system')">System</div>
+        </div>
+        <div class="settings-content">
+          <!-- Profile -->
+          <div id="settings-profile">
+            <div class="settings-section">
+              <div class="settings-section-title">Personal Information</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input id="settings-full-name" class="form-input" value="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Preferred Name</label>
+                  <input id="settings-preferred-name" class="form-input" value="">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input id="settings-email" class="form-input" value="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone</label>
+                  <input id="settings-phone" class="form-input" value="">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">City</label>
+                  <input id="settings-city" class="form-input" value="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">State</label>
+                  <input id="settings-state" class="form-input" value="">
+                </div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">Job Preferences</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Target Role</label>
+                  <input id="settings-target-role" class="form-input" value="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Years of Experience</label>
+                  <input id="settings-years-experience" class="form-input" value="" type="number">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Salary Min (USD)</label>
+                  <input id="settings-salary-min" class="form-input" value="" type="number">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Salary Max (USD)</label>
+                  <input id="settings-salary-max" class="form-input" value="" type="number">
+                </div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">Skills Boundary</div>
+              <div id="settings-skills-boundary" class="skills-boundary-list"></div>
+              <button class="btn btn-sm" type="button" style="margin-top:10px" onclick="addSkillsBoundaryRow()">+ Add Category</button>
+              <div style="margin-top:8px;font-size:11px;color:var(--text-3)">One skill per line, categories can be renamed.</div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">Base Resume</div>
+              <div class="form-group">
+                <label class="form-label">Resume Text</label>
+                <textarea id="settings-resume-text" class="form-input" rows="10" placeholder="Paste base resume text"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Queries (hidden by default) -->
+          <div id="settings-search" style="display:none">
+            <div class="settings-section">
+              <div class="settings-section-title">Search Queries</div>
+              <div id="settings-tier-hint" style="font-size:12px;color:var(--text-3);margin-bottom:16px"></div>
+              <div id="query-list"></div>
+              <button id="settings-add-query" class="btn" style="margin-top:12px" onclick="addQueryRow()">+ Add Query</button>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">Locations</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Primary Location</label>
+                  <input id="settings-primary-location" class="form-input" value="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Include Remote</label>
+                  <select id="settings-include-remote" class="form-input"><option>Yes</option><option>No</option></select>
+                </div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">Job Boards</div>
+              <div id="settings-board-pills" class="skills-boundary-list">
+                <div style="font-size:12px;color:var(--text-3)">Loading boards...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gemini CLI (hidden by default) -->
+          <div id="settings-gemini" style="display:none">
+            <div class="settings-section">
+              <div class="settings-section-title">Gemini CLI Status</div>
+              <div id="settings-gemini-status" class="system-check">
+                <div class="check-icon check-loading">...</div>
+                <div>
+                  <div class="check-name">Gemini CLI</div>
+                  <div class="check-detail">Checking availability...</div>
+                </div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">CapSolver CAPTCHA</div>
+              <div class="form-group">
+                <label class="form-label" style="display:flex;align-items:center;gap:8px">
+                  CAPSOLVER_API_KEY
+                  <button id="capsolver-help-toggle" class="btn btn-sm btn-ghost capsolver-help-btn" type="button" onclick="toggleCapsolverHelp()" aria-expanded="false">Info</button>
+                </label>
+                <div class="capsolver-input-row">
+                  <input id="settings-capsolver-key" class="form-input" type="password" autocomplete="off" placeholder="Enter CapSolver API key">
+                  <button id="capsolver-key-visibility" class="btn btn-sm" type="button" onclick="toggleCapsolverKeyVisibility()">Show</button>
+                  <button class="btn btn-sm btn-primary" type="button" onclick="saveCapsolverSettings()">Save</button>
+                </div>
+                <div id="capsolver-help" class="capsolver-help" style="display:none">
+                  CapSolver automatically solves CAPTCHAs (hCaptcha, reCAPTCHA, Turnstile, FunCaptcha) when the auto-apply bot encounters them on job sites. Without a key, CAPTCHA-blocked applications will fail gracefully. Get an API key at capsolver.com. Pricing is usage-based, typically $1-3 per 1000 solves.
+                </div>
+                <div id="capsolver-status" class="capsolver-status">Status: not configured.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System (hidden by default) -->
+          <div id="settings-system" style="display:none">
+            <div class="settings-section">
+              <div class="settings-section-title">System Requirements</div>
+              <div style="font-size:12px;color:var(--text-3)">Loading system checks...</div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">Data</div>
+              <div class="form-group">
+                <label class="form-label">Database Location</label>
+                <input id="settings-db-location" class="form-input" value="" disabled>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Config Directory</label>
+                <input id="settings-config-dir" class="form-input" value="" disabled>
+              </div>
+              <div class="btn-group" style="margin-top:12px">
+                <button class="btn" onclick="openConfigFolder()">Open Config Folder</button>
+                <button class="btn" style="color:var(--red)" onclick="resetDatabase()">Reset Database</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- JOB DETAIL PANEL -->
+<div class="detail-backdrop" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <button class="detail-close" onclick="closeDetail()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="detail-title" id="detail-title"></div>
+    <div class="detail-meta" id="detail-meta"></div>
+  </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <div class="detail-section-title">Fit Score</div>
+      <div class="detail-score-bar" id="detail-score-bar"></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Why This Matches</div>
+      <div class="detail-desc" id="detail-reasoning"></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Job Description</div>
+      <div class="detail-desc" id="detail-desc"></div>
+    </div>
+    <div class="detail-section" id="detail-resume-section" style="display:none">
+      <div class="detail-section-title">Tailored Resume Preview</div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:12px;color:var(--text-2);line-height:1.7;font-family:var(--mono)" id="detail-resume"></div>
+    </div>
+  </div>
+  <div class="detail-actions">
+    <button id="detail-view-posting-btn" class="btn" type="button" style="flex:1">View Original Posting</button>
+    <button id="detail-apply-btn" class="btn btn-primary" type="button" style="flex:1">Apply Now</button>
+  </div>
+</div>
+
+<!-- SETUP WIZARD OVERLAY -->
+<div class="setup-overlay" id="setup-overlay">
+  <div class="setup-container">
+    <div class="setup-progress">
+      <div class="setup-step-dot current" id="dot-0"></div>
+      <div class="setup-step-dot" id="dot-1"></div>
+      <div class="setup-step-dot" id="dot-2"></div>
+      <div class="setup-step-dot" id="dot-3"></div>
+    </div>
+
+    <!-- Step 0: System Check -->
+    <div class="setup-step" id="step-0">
+      <div class="setup-step-title">System Check</div>
+      <div class="setup-step-desc">Checking that your system has everything needed to run ApplyPilot.</div>
+      <div id="setup-system-checks">
+        <div style="font-size:12px;color:var(--text-3)">Loading system checks...</div>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-ghost" onclick="closeSetup()">Cancel</button>
+        <button class="btn btn-primary" onclick="nextSetupStep()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 1: Resume -->
+    <div class="setup-step" id="step-1" style="display:none">
+      <div class="setup-step-title">Upload Your Resume</div>
+      <div class="setup-step-desc">Drop a .txt resume. This becomes your base resume that gets tailored per job.</div>
+      <input id="setup-resume-file" type="file" accept=".txt,text/plain" hidden>
+      <div class="drop-zone" id="setup-resume-drop-zone">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5" style="margin-bottom:12px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="drop-zone-text">Drop your resume here or click to browse</div>
+        <div class="drop-zone-sub">.txt, max 5MB</div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">Resume Text</label>
+        <textarea id="setup-resume-text" class="form-input" rows="8" placeholder="Paste your resume text here"></textarea>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
+        <button class="btn btn-primary" onclick="nextSetupStep()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Profile -->
+    <div class="setup-step" id="step-2" style="display:none">
+      <div class="setup-step-title">Your Profile</div>
+      <div class="setup-step-desc">Basic info used to fill out job applications.</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name</label><input id="setup-full-name" class="form-input" placeholder="John Doe"></div>
+        <div class="form-group"><label class="form-label">Email</label><input id="setup-email" class="form-input" placeholder="you@email.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone</label><input id="setup-phone" class="form-input" placeholder="555-123-4567"></div>
+        <div class="form-group"><label class="form-label">City, State</label><input id="setup-city-state" class="form-input" placeholder="City, State"></div>
+      </div>
+      <div class="form-group"><label class="form-label">What kind of work are you looking for?</label><input id="setup-target-role" class="form-input" placeholder="Target role"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Salary Min</label><input id="setup-salary-min" class="form-input" type="number" placeholder="50000"></div>
+        <div class="form-group"><label class="form-label">Salary Max</label><input id="setup-salary-max" class="form-input" type="number" placeholder="100000"></div>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
+        <button class="btn btn-primary" onclick="nextSetupStep()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Search Config -->
+    <div class="setup-step" id="step-3" style="display:none">
+      <div class="setup-step-title">Search Configuration</div>
+      <div class="setup-step-desc">What to search for and where. You can always adjust these later.</div>
+      <div class="form-group">
+        <label class="form-label">Search Queries (one per line)</label>
+        <textarea id="setup-search-queries" class="form-input" rows="5" placeholder="Enter one search query per line"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Location</label><input id="setup-location" class="form-input" placeholder="City, State"></div>
+        <div class="form-group"><label class="form-label">Include Remote Jobs</label><select id="setup-include-remote" class="form-input"><option selected>Yes</option><option>No</option></select></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Boards</label>
+        <div id="setup-board-pills" class="skills-boundary-list">
+          <div style="font-size:12px;color:var(--text-3)">Loading boards...</div>
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
+        <button class="btn btn-primary" onclick="finishSetup()">Finish Setup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ API BASE ═══
+const API = window.location.origin + '/api';
+let JOBS = [];
+let currentFilter = 'all';
+let debounceTimer = null;
+let _cachedStats = null;
+let _geminiCliDetected = null;
+const _apiErrorAt = {};
+let _appDefaults = {
+  defaults: {},
+  pipeline_stages: [],
+  score_filters: {},
+  tier_labels: {}
+};
+let _appDefaultsLoaded = false;
+const MOBILE_BREAKPOINT = 980;
+
+function isMobileLayout() {
+  return window.matchMedia('(max-width: ' + MOBILE_BREAKPOINT + 'px)').matches;
+}
+
+function setSidebarOpen(open) {
+  const shouldOpen = Boolean(open && isMobileLayout());
+  document.body.classList.toggle('sidebar-open', shouldOpen);
+  const toggleBtn = document.getElementById('mobile-nav-toggle');
+  if (toggleBtn) toggleBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+}
+
+function toggleSidebar() {
+  setSidebarOpen(!document.body.classList.contains('sidebar-open'));
+}
+
+function closeSidebar() {
+  setSidebarOpen(false);
+}
+
+function handleResponsiveLayout() {
+  if (!isMobileLayout()) {
+    setSidebarOpen(false);
+  }
+}
+
+function windowControlUnavailable() {
+  toast('Window controls are only available in the desktop shell.', 'info');
+}
+
+// ═══ TOAST NOTIFICATIONS ═══
+function toast(msg, type) {
+  type = type || 'info';
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;top:52px;right:20px;z-index:999;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;' +
+    'font-family:var(--font);color:#fff;opacity:0;transform:translateY(-8px);transition:all 0.3s ease;max-width:360px;' +
+    'box-shadow:0 8px 24px rgba(0,0,0,0.4);backdrop-filter:blur(8px);';
+  if (type === 'success') t.style.background = 'rgba(52,211,153,0.9)';
+  else if (type === 'error') t.style.background = 'rgba(248,113,113,0.9)';
+  else if (type === 'warning') t.style.background = 'rgba(251,191,36,0.9)';
+  else t.style.background = 'rgba(129,140,248,0.9)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(-8px)'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ═══ API HELPERS ═══
+function notifyApiError(path, message) {
+  const key = path + '|' + message;
+  const now = Date.now();
+  if (_apiErrorAt[key] && now - _apiErrorAt[key] < 5000) return;
+  _apiErrorAt[key] = now;
+  toast(message, 'error');
+}
+
+function asCount(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function asIntOrNull(value) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getDefaultMinScore() {
+  return asIntOrNull(_appDefaults && _appDefaults.defaults ? _appDefaults.defaults.min_score : null);
+}
+
+function getScoreFilterConfig(name) {
+  const all = (_appDefaults && _appDefaults.score_filters && typeof _appDefaults.score_filters === 'object')
+    ? _appDefaults.score_filters
+    : {};
+  const cfg = all[name];
+  return (cfg && typeof cfg === 'object') ? cfg : {};
+}
+
+function getScoreFilterMin(name) {
+  return asIntOrNull(getScoreFilterConfig(name).min_score);
+}
+
+function getScoreFilterMax(name) {
+  return asIntOrNull(getScoreFilterConfig(name).max_score);
+}
+
+function getPipelineStages() {
+  return Array.isArray(_appDefaults && _appDefaults.pipeline_stages) ? _appDefaults.pipeline_stages.filter(Boolean) : [];
+}
+
+function getPipelineMinBound() {
+  const el = byId('pipeline-min-score');
+  return asIntOrNull(el && el.min != null ? el.min : null);
+}
+
+function getPipelineMaxBound() {
+  const el = byId('pipeline-min-score');
+  return asIntOrNull(el && el.max != null ? el.max : null);
+}
+
+function getTierOrder() {
+  const labels = (_appDefaults && _appDefaults.tier_labels && typeof _appDefaults.tier_labels === 'object')
+    ? _appDefaults.tier_labels
+    : {};
+  return Object.keys(labels)
+    .map(k => asIntOrNull(k))
+    .filter(v => Number.isFinite(v))
+    .sort((a, b) => a - b);
+}
+
+function getTierLabel(tier) {
+  const labels = (_appDefaults && _appDefaults.tier_labels && typeof _appDefaults.tier_labels === 'object')
+    ? _appDefaults.tier_labels
+    : {};
+  const key = String(tier);
+  return String(labels[key] || ('Tier ' + key));
+}
+
+function tierStatusHintText() {
+  const order = getTierOrder();
+  if (!order.length) return '';
+  return order.map(tier => 'Tier ' + tier + ' = ' + getTierLabel(tier)).join(', ');
+}
+
+function updateScoreFilterLabels() {
+  const highEl = byId('jobs-filter-high');
+  const midEl = byId('jobs-filter-mid');
+  const lowEl = byId('jobs-filter-low');
+  const highMin = getScoreFilterMin('high');
+  const midMin = getScoreFilterMin('mid');
+  const midMax = getScoreFilterMax('mid');
+  const lowMin = getScoreFilterMin('low');
+  const lowMax = getScoreFilterMax('low');
+  if (highEl) highEl.textContent = Number.isFinite(highMin) ? ('Score ' + highMin + '+') : 'High';
+  if (midEl) {
+    if (Number.isFinite(midMin) && Number.isFinite(midMax)) midEl.textContent = 'Score ' + midMin + '-' + midMax;
+    else if (Number.isFinite(midMin)) midEl.textContent = 'Score ' + midMin + '+';
+    else if (Number.isFinite(midMax)) midEl.textContent = 'Score <= ' + midMax;
+    else midEl.textContent = 'Mid';
+  }
+  if (lowEl) {
+    if (Number.isFinite(lowMin) && Number.isFinite(lowMax)) lowEl.textContent = 'Score ' + lowMin + '-' + lowMax;
+    else if (Number.isFinite(lowMin)) lowEl.textContent = 'Score ' + lowMin + '+';
+    else if (Number.isFinite(lowMax)) lowEl.textContent = 'Score <= ' + lowMax;
+    else lowEl.textContent = 'Low';
+  }
+}
+
+function updateTierHintLabel() {
+  const hint = byId('settings-tier-hint');
+  if (!hint) return;
+  hint.textContent = tierStatusHintText();
+}
+
+function minScoreLabelSuffix() {
+  const minScore = getDefaultMinScore();
+  return Number.isFinite(minScore) ? (minScore + '+') : '';
+}
+
+function updateMinScoreLabels() {
+  const suffix = minScoreLabelSuffix();
+  const statsLabel = byId('stats-scored-label');
+  if (statsLabel) statsLabel.textContent = suffix ? ('Scored ' + suffix) : 'Scored';
+  const tailorDesc = document.querySelector('#pipeline-card-list [data-stage="tailor"] .pipeline-card-desc');
+  if (tailorDesc) tailorDesc.textContent = stageDescription('tailor');
+}
+
+function stageTitle(stage) {
+  const key = String(stage || '').toLowerCase();
+  if (key === 'pdf') return 'PDF';
+  if (key === 'cover_letter') return 'Cover Letter';
+  if (key === 'tailor') return 'Tailor Resume';
+  if (key === 'apply') return 'Auto-Apply';
+  return key.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
+}
+
+function stageIconSvg(stage) {
+  const key = String(stage || '').toLowerCase();
+  if (key === 'discover') return '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>';
+  if (key === 'enrich') return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline>';
+  if (key === 'score') return '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
+  if (key === 'tailor') return '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>';
+  if (key === 'cover_letter') return '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>';
+  if (key === 'pdf') return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h8"></path><path d="M8 17h5"></path>';
+  if (key === 'apply') return '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+  return '<circle cx="12" cy="12" r="9"></circle>';
+}
+
+function stageCardTone(stage) {
+  const key = String(stage || '').toLowerCase();
+  if (key === 'score') return { bg: 'var(--yellow-dim)', fg: 'var(--yellow)', progress: 'var(--green)' };
+  if (key === 'tailor') return { bg: 'var(--accent-dim)', fg: 'var(--accent)', progress: 'var(--accent)' };
+  if (key === 'cover_letter' || key === 'apply' || key === 'pdf') return { bg: 'var(--bg-4)', fg: 'var(--text-3)', progress: 'var(--green)' };
+  return { bg: 'var(--accent-dim)', fg: 'var(--accent)', progress: 'var(--green)' };
+}
+
+function stageDescription(stage) {
+  const key = String(stage || '').toLowerCase();
+  if (key === 'discover') return 'Scrape jobs from selected discovery sources';
+  if (key === 'enrich') return 'Visit each URL, extract full descriptions, find apply links';
+  if (key === 'score') return 'AI rates each job 1-10 against your resume and preferences';
+  if (key === 'tailor') {
+    const suffix = minScoreLabelSuffix();
+    return suffix
+      ? ('Rewrite resume for each ' + suffix + ' job, preserving real facts')
+      : 'Rewrite resume for high fit jobs, preserving real facts';
+  }
+  if (key === 'cover_letter') return 'Generate personalized cover letter per job';
+  if (key === 'pdf') return 'Convert tailored resumes and cover letters to PDF';
+  if (key === 'apply') return 'Navigate forms, fill fields, submit applications via browser automation';
+  return 'Run ' + stageTitle(stage) + ' stage';
+}
+
+function stageMetric(stats, stage) {
+  const s = stats && typeof stats === 'object' ? stats : {};
+  const key = String(stage || '').toLowerCase();
+  if (key === 'discover') return asIntOrNull(s.total);
+  if (key === 'enrich') return asIntOrNull(s.enriched);
+  if (key === 'score') return asIntOrNull(s.scored);
+  if (key === 'tailor') return asIntOrNull(s.tailored);
+  if (key === 'cover_letter') return asIntOrNull(s.cover_letters);
+  if (key === 'pdf') return asIntOrNull(s.pdf_generated != null ? s.pdf_generated : s.pdf);
+  if (key === 'apply') return asIntOrNull(s.applied);
+  return asIntOrNull(s[key]);
+}
+
+function ratioPercent(numerator, denominator) {
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((numerator / denominator) * 100)));
+}
+
+function stageProgressPercent(stats, stage) {
+  const key = String(stage || '').toLowerCase();
+  const total = asIntOrNull(stats && stats.total);
+  const enriched = asIntOrNull(stats && stats.enriched);
+  const scored = asIntOrNull(stats && stats.scored);
+  const scored7plus = asIntOrNull(stats && stats.scored_7plus);
+  const tailored = asIntOrNull(stats && stats.tailored);
+  const coverLetters = asIntOrNull(stats && stats.cover_letters);
+  const applied = asIntOrNull(stats && stats.applied);
+  const pdfCount = asIntOrNull(stats && (stats.pdf_generated != null ? stats.pdf_generated : stats.pdf));
+  if (key === 'discover') return Number.isFinite(total) && total > 0 ? 100 : 0;
+  if (key === 'enrich') return ratioPercent(enriched, total);
+  if (key === 'score') return ratioPercent(scored, enriched);
+  if (key === 'tailor') return ratioPercent(tailored, Number.isFinite(scored7plus) ? scored7plus : scored);
+  if (key === 'cover_letter') return ratioPercent(coverLetters, tailored);
+  if (key === 'pdf') return ratioPercent(pdfCount, Number.isFinite(coverLetters) ? coverLetters : tailored);
+  if (key === 'apply') return ratioPercent(applied, Number.isFinite(coverLetters) ? coverLetters : tailored);
+  const count = stageMetric(stats, stage);
+  return Number.isFinite(count) && count > 0 ? 100 : 0;
+}
+
+function stageStatsText(stats, stage) {
+  const key = String(stage || '').toLowerCase();
+  const count = stageMetric(stats, stage);
+  if (!Number.isFinite(count)) return '--';
+  const total = asIntOrNull(stats && stats.total);
+  const enriched = asIntOrNull(stats && stats.enriched);
+  const scored = asIntOrNull(stats && stats.scored);
+  const scored7plus = asIntOrNull(stats && stats.scored_7plus);
+  const tailored = asIntOrNull(stats && stats.tailored);
+  if (key === 'discover') return count + ' jobs';
+  if (key === 'enrich') return Number.isFinite(total) ? (count + ' / ' + total) : String(count);
+  if (key === 'score') return count + ' scored';
+  if (key === 'tailor') {
+    const denom = Number.isFinite(scored7plus) ? scored7plus : scored;
+    return Number.isFinite(denom) ? (count + ' / ' + denom) : String(count);
+  }
+  if (key === 'cover_letter') return count + ' letters';
+  if (key === 'pdf') return count + ' PDFs';
+  if (key === 'apply') return count + ' applied';
+  if (Number.isFinite(enriched) || Number.isFinite(tailored)) return String(count);
+  return String(count);
+}
+
+function getPollIntervalMs() {
+  const seconds = asIntOrNull(_appDefaults && _appDefaults.defaults ? _appDefaults.defaults.poll_interval : null);
+  if (!Number.isFinite(seconds) || seconds <= 0) return 3000;
+  return Math.max(1000, seconds * 1000);
+}
+
+function renderDashboardPipelineFlow() {
+  const flow = byId('dashboard-pipeline-flow');
+  if (!flow) return;
+  const stages = getPipelineStages();
+  if (!stages.length) {
+    flow.innerHTML = '<div style="font-size:12px;color:var(--text-3);padding:8px 0">No pipeline stages configured.</div>';
+    return;
+  }
+  const parts = [];
+  stages.forEach((stage, idx) => {
+    const label = stageTitle(stage);
+    parts.push(
+      '<div class="pipeline-stage" data-stage="' + escAttr(stage) + '">' +
+      '<div class="stage-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + stageIconSvg(stage) + '</svg></div>' +
+      '<div class="stage-label md-inline">' + mdInline(label) + '</div>' +
+      '<div class="stage-count">--</div></div>'
+    );
+    if (idx < stages.length - 1) {
+      parts.push('<div class="pipeline-connector" data-index="' + idx + '"></div>');
+    }
+  });
+  flow.innerHTML = parts.join('');
+}
+
+function renderPipelineCards() {
+  const list = byId('pipeline-card-list');
+  if (!list) return;
+  const stages = getPipelineStages();
+  if (!stages.length) {
+    list.innerHTML = '<div class="card" style="padding:14px;font-size:12px;color:var(--text-3)">No pipeline stages configured.</div>';
+    return;
+  }
+  list.innerHTML = stages.map((stage, idx) => {
+    const tone = stageCardTone(stage);
+    return '<div class="pipeline-card" data-stage="' + escAttr(stage) + '">' +
+      '<div class="pipeline-card-icon" style="background:' + tone.bg + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="' + tone.fg + '" stroke-width="2">' + stageIconSvg(stage) + '</svg>' +
+      '</div>' +
+      '<div class="pipeline-card-info">' +
+      '<div class="pipeline-card-name md-inline">' + mdInline((idx + 1) + '. ' + stageTitle(stage)) + '</div>' +
+      '<div class="pipeline-card-desc md-inline">' + mdInline(stageDescription(stage)) + '</div>' +
+      '</div>' +
+      '<div class="pipeline-card-stats"><div>--</div>' +
+      '<div class="progress-bar"><div class="progress-fill" style="width:0%;background:' + tone.progress + '"></div></div></div>' +
+      '<button class="btn btn-sm" onclick="runStage(\'' + escAttr(stage) + '\')">Run</button>' +
+      '</div>';
+  }).join('');
+}
+
+function renderPipelineUi() {
+  renderDashboardPipelineFlow();
+  renderPipelineCards();
+}
+
+function stageToStatus(stage) {
+  const s = String(stage || '').toLowerCase();
+  if (s === 'discover') return 'discovered';
+  if (s === 'enrich') return 'enriched';
+  if (s === 'score') return 'scored';
+  if (s === 'tailor') return 'tailored';
+  if (s === 'apply') return 'applied';
+  return '';
+}
+
+function buildStatusClassMap() {
+  const map = {};
+  getPipelineStages().forEach(stage => {
+    const status = stageToStatus(stage);
+    if (!status) return;
+    map[status] = 'status-' + status;
+  });
+  if (!map.discovered) map.discovered = 'status-discovered';
+  return map;
+}
+
+function scoreClassForValue(score) {
+  const value = asIntOrNull(score);
+  if (!Number.isFinite(value)) return 'score-none';
+  const highMin = getScoreFilterMin('high');
+  const midMin = getScoreFilterMin('mid');
+  if (Number.isFinite(highMin) && value >= highMin) return 'score-high';
+  if (Number.isFinite(midMin) && value >= midMin) return 'score-mid';
+  return 'score-low';
+}
+
+function normalizeMinScore(value) {
+  const n = parseInt(value, 10);
+  const defaultMinScore = getDefaultMinScore();
+  if (!Number.isFinite(n)) {
+    if (Number.isFinite(defaultMinScore)) return defaultMinScore;
+    return 0;
+  }
+  const minBound = getPipelineMinBound();
+  const maxBound = getPipelineMaxBound();
+  if (Number.isFinite(minBound) && n < minBound) return minBound;
+  if (Number.isFinite(maxBound) && n > maxBound) return maxBound;
+  return n;
+}
+
+function getProfileMinScore(profile) {
+  if (!profile || typeof profile !== 'object') return normalizeMinScore(getDefaultMinScore());
+  if (profile.min_score != null) return normalizeMinScore(profile.min_score);
+  if (profile.pipeline && profile.pipeline.min_score != null) return normalizeMinScore(profile.pipeline.min_score);
+  if (profile.preferences && profile.preferences.min_score != null) return normalizeMinScore(profile.preferences.min_score);
+  return normalizeMinScore(getDefaultMinScore());
+}
+
+function setPipelineMinScoreInput(score) {
+  const value = normalizeMinScore(score);
+  setFieldValue('pipeline-min-score', value);
+}
+
+function getPipelineMinScoreInput() {
+  return normalizeMinScore(byId('pipeline-min-score')?.value);
+}
+
+function normalizeWorkers(value) {
+  const n = parseInt(value, 10);
+  if (!Number.isFinite(n)) return 1;
+  if (n < 1) return 1;
+  const maxInput = byId('pipeline-workers');
+  const maxBound = asIntOrNull(maxInput && maxInput.max != null ? maxInput.max : null);
+  if (Number.isFinite(maxBound) && maxBound > 0) return Math.min(n, maxBound);
+  return Math.min(n, 64);
+}
+
+function setPipelineWorkersInput(value) {
+  setFieldValue('pipeline-workers', normalizeWorkers(value));
+}
+
+function getPipelineWorkersInput() {
+  return normalizeWorkers(byId('pipeline-workers')?.value);
+}
+
+function getPipelineDryRunInput() {
+  return Boolean(byId('pipeline-dry-run')?.checked);
+}
+
+function setTopMatchesMessage(msg) {
+  const container = byId('top-matches-list');
+  if (!container) return;
+  container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">' + esc(msg) + '</div>';
+}
+
+function setJobsTableMessage(msg) {
+  const tbody = byId('jobs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">' + esc(msg) + '</td></tr>';
+}
+
+function updateUserIdentity(profile) {
+  const personal = (profile && profile.personal) || {};
+  const preferred = String(personal.preferred_name || '').trim();
+  const full = String(personal.full_name || '').trim();
+  const displayName = preferred || full || 'Profile';
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0].toUpperCase())
+    .join('') || '--';
+  const nameEl = byId('sidebar-user-name');
+  const avatarEl = byId('sidebar-avatar');
+  if (nameEl) nameEl.textContent = displayName;
+  if (avatarEl) avatarEl.textContent = initials;
+}
+
+function normalizeSkillsBoundary(skillsBoundary) {
+  const obj = (skillsBoundary && typeof skillsBoundary === 'object') ? skillsBoundary : {};
+  const out = {};
+  Object.keys(obj).forEach(key => {
+    const normalizedKey = String(key || '').trim().replace(/\s+/g, '_');
+    if (!normalizedKey) return;
+    const values = Array.isArray(obj[key]) ? obj[key] : [];
+    const items = values.map(v => String(v || '').trim()).filter(Boolean);
+    out[normalizedKey] = items;
+  });
+  return out;
+}
+
+function renderSkillsBoundary(profile) {
+  const container = byId('settings-skills-boundary');
+  if (!container) return;
+  const skillsBoundary = normalizeSkillsBoundary(profile && profile.skills_boundary);
+  const keys = Object.keys(skillsBoundary);
+  if (!keys.length) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-3)">No skills configured yet. Add a category below.</div>';
+    return;
+  }
+  container.innerHTML = keys.map(key => {
+    const displayKey = key.replace(/_/g, ' ');
+    const text = skillsBoundary[key].join('\n');
+    return '<div class="skills-boundary-row" data-skills-row>' +
+      '<div class="skills-boundary-row-head">' +
+      '<input class="form-input skills-key" value="' + escAttr(displayKey) + '" placeholder="Category (for example: must_have)">' +
+      '<button class="btn btn-sm btn-ghost" type="button" style="color:var(--red)" onclick="removeSkillsBoundaryRow(this)">Remove</button>' +
+      '</div>' +
+      '<textarea class="form-input skills-values" rows="4" placeholder="One skill per line">' + esc(text) + '</textarea>' +
+      '</div>';
+  }).join('');
+}
+
+function addSkillsBoundaryRow() {
+  const existing = readSkillsBoundaryFromSettings();
+  let key = 'custom';
+  let i = 1;
+  while (existing[key]) {
+    i += 1;
+    key = 'custom_' + i;
+  }
+  existing[key] = [];
+  renderSkillsBoundary({skills_boundary: existing});
+}
+
+function removeSkillsBoundaryRow(btn) {
+  const row = btn.closest('[data-skills-row]');
+  if (row) row.remove();
+  const container = byId('settings-skills-boundary');
+  if (container && !container.querySelector('[data-skills-row]')) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-3)">No skills configured yet. Add a category below.</div>';
+  }
+}
+
+function readSkillsBoundaryFromSettings() {
+  const rows = Array.from(document.querySelectorAll('#settings-skills-boundary [data-skills-row]'));
+  const out = {};
+  rows.forEach(row => {
+    const rawKey = (row.querySelector('.skills-key')?.value || '').trim();
+    const key = rawKey.replace(/\s+/g, '_').toLowerCase();
+    if (!key) return;
+    const values = (row.querySelector('.skills-values')?.value || '')
+      .split('\n')
+      .map(v => v.trim())
+      .filter(Boolean);
+    out[key] = values;
+  });
+  return out;
+}
+
+async function loadUserIdentity() {
+  const profile = await api('/config/profile');
+  if (profile && typeof profile === 'object') {
+    _currentProfile = profile;
+    updateUserIdentity(profile);
+    setPipelineMinScoreInput(getProfileMinScore(profile));
+  } else {
+    setPipelineMinScoreInput(getDefaultMinScore());
+  }
+}
+
+async function api(path, opts, meta) {
+  const settings = meta || {};
+  try {
+    const res = await fetch(API + path, opts);
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    let payload = null;
+    if (contentType.includes('application/json')) {
+      payload = await res.json();
+    } else {
+      const text = await res.text();
+      payload = text ? {detail: text} : {};
+    }
+    if (!res.ok) {
+      const detail = payload && typeof payload === 'object' ? (payload.detail || payload.error) : '';
+      const message = detail || ('Request failed (' + res.status + ') for ' + path);
+      console.error('API error response:', path, res.status, payload);
+      if (!settings.silent) notifyApiError(path, message);
+      return null;
+    }
+    if (payload && typeof payload === 'object' && payload.error) {
+      console.error('API payload error:', path, payload.error);
+      if (!settings.silent) notifyApiError(path, String(payload.error));
+      return null;
+    }
+    return payload;
+  } catch (e) {
+    console.error('API error:', path, e);
+    if (!settings.silent) notifyApiError(path, 'Network error while loading data');
+    return null;
+  }
+}
+
+// ═══ LOAD DEFAULTS FROM SERVER ═══
+async function loadDefaults() {
+  const data = await api('/config/defaults');
+  if (!data || typeof data !== 'object' || !data.defaults || typeof data.defaults !== 'object') {
+    _appDefaultsLoaded = false;
+    return false;
+  }
+
+  _appDefaults = {
+    defaults: data.defaults,
+    pipeline_stages: Array.isArray(data.pipeline_stages) ? data.pipeline_stages : [],
+    score_filters: (data.score_filters && typeof data.score_filters === 'object') ? data.score_filters : {},
+    tier_labels: (data.tier_labels && typeof data.tier_labels === 'object') ? data.tier_labels : {}
+  };
+  _appDefaultsLoaded = true;
+
+  const minScoreValue = getDefaultMinScore();
+  const minScoreInput = byId('pipeline-min-score');
+  if (minScoreInput && Number.isFinite(minScoreValue)) {
+    minScoreInput.value = String(minScoreValue);
+  }
+  const workersInput = byId('pipeline-workers');
+  if (workersInput) {
+    workersInput.min = '1';
+    workersInput.max = '64';
+    setPipelineWorkersInput(workersInput.value || 1);
+  }
+
+  updateScoreFilterLabels();
+  updateTierHintLabel();
+  renderPipelineUi();
+  updateMinScoreLabels();
+  const existingQueries = getSearchQueriesFromUI();
+  if (existingQueries.length) {
+    renderQueries(existingQueries);
+  }
+  return true;
+}
+
+// ═══ DASHBOARD ═══
+async function loadDashboard() {
+  const stats = await api('/stats');
+  if (!stats) return;
+  renderPipelineUi();
+  _cachedStats = stats;
+  const total = asCount(stats.total);
+  const enriched = asCount(stats.enriched);
+  const scored = asCount(stats.scored);
+  const scored7plus = asCount(stats.scored_7plus);
+  const tailored = asCount(stats.tailored);
+  const coverLetters = asCount(stats.cover_letters);
+  const applied = asCount(stats.applied);
+  // Update stat cards
+  const cards = document.querySelectorAll('.stat-value');
+  if (cards[0]) cards[0].textContent = total;
+  if (cards[1]) cards[1].textContent = scored7plus;
+  if (cards[2]) cards[2].textContent = tailored;
+  if (cards[3]) cards[3].textContent = applied;
+  // Update subtitles
+  const sub = document.querySelectorAll('.stat-sub');
+  if (sub[0]) sub[0].textContent = enriched + ' enriched';
+  if (sub[1]) sub[1].textContent = total > 0 ? Math.round(scored7plus / total * 100) + '% match rate' : 'No scores yet';
+  if (sub[2]) sub[2].textContent = tailored + ' tailored, ' + coverLetters + ' letters';
+  if (sub[3]) sub[3].textContent = applied > 0 ? applied + ' submitted' : 'None yet';
+  // Update nav badge
+  const badge = byId('nav-job-count');
+  if (badge) badge.textContent = total;
+  // Update page subtitle
+  const pageSub = document.querySelector('#view-dashboard .page-subtitle');
+  if (pageSub && stats.last_discovered) {
+    const ago = timeAgo(stats.last_discovered);
+    pageSub.textContent = 'Last discovery ' + ago;
+  } else if (pageSub) {
+    pageSub.textContent = 'No discoveries yet';
+  }
+  // Update dashboard pipeline flow counts and statuses
+  const stageIds = getPipelineStages();
+  const stageCounts = stageIds.map(stage => stageMetric(stats, stage));
+  stageIds.forEach((stage, idx) => {
+    const stageEl = document.querySelector('#dashboard-pipeline-flow .pipeline-stage[data-stage="' + stage + '"]');
+    if (!stageEl) return;
+    const countEl = stageEl.querySelector('.stage-count');
+    const count = stageCounts[idx];
+    if (countEl) countEl.textContent = Number.isFinite(count) ? String(count) : '--';
+    const done = Number.isFinite(count) && count > 0;
+    const prevCount = idx > 0 ? stageCounts[idx - 1] : null;
+    const active = idx > 0 && !done && Number.isFinite(prevCount) && prevCount > 0;
+    stageEl.className = 'pipeline-stage' + (done ? ' done' : '') + (active ? ' active' : '');
+    if (idx < stageIds.length - 1) {
+      const connector = document.querySelector('#dashboard-pipeline-flow .pipeline-connector[data-index="' + idx + '"]');
+      const nextCount = stageCounts[idx + 1];
+      if (connector) connector.className = 'pipeline-connector' + (Number.isFinite(nextCount) && nextCount > 0 ? ' done' : '');
+    }
+  });
+  // Update jobs subtitle
+  const jobsSub = document.querySelector('#view-jobs .page-subtitle');
+  if (jobsSub) {
+    const suffix = minScoreLabelSuffix();
+    jobsSub.textContent = total + ' discovered, ' + scored7plus + ' scored ' + (suffix || 'high');
+  }
+  // Load top matches and activity
+  loadTopMatches({ total, enriched, scored, scored_7plus: scored7plus, tailored, cover_letters: coverLetters, applied, last_discovered: stats.last_discovered, sources: stats.sources || {} });
+  updateActivityFeed(stats);
+  // Update pipeline view stats
+  updatePipelineView({ total, enriched, scored, scored_7plus: scored7plus, tailored, cover_letters: coverLetters, applied });
+}
+
+async function loadTopMatches(stats) {
+  const container = document.getElementById('top-matches-list');
+  if (!container) return;
+  if (stats.scored_7plus > 0) {
+    const minScore = getDefaultMinScore();
+    const minScoreParam = Number.isFinite(minScore) ? ('min_score=' + encodeURIComponent(String(minScore)) + '&') : '';
+    const data = await api('/jobs?' + minScoreParam + 'sort=fit_score&order=desc&limit=5');
+    if (!data) {
+      setTopMatchesMessage('Unable to load top matches.');
+      return;
+    }
+    if (Array.isArray(data.jobs) && data.jobs.length) {
+      container.innerHTML = data.jobs.map(j => {
+        const scoreClass = scoreClassForValue(j.fit_score);
+        const loc = j.location || '';
+        const site = (j.site || '').replace(/_/g, ' ');
+        const safeUrl = encodeURIComponent(j.url);
+        return '<div class="activity-item" style="cursor:pointer" onclick="openDetail(\'' + safeUrl + '\')">' +
+          '<div style="flex:1"><div style="font-weight:600;font-size:13px">' + mdInline(j.title) + '</div>' +
+          '<div style="font-size:12px;color:var(--text-3);margin-top:2px">' + mdInline(site) + ' / ' + mdInline(loc) + '</div></div>' +
+          '<span class="score-badge ' + scoreClass + '">' + (j.fit_score || '-') + '</span></div>';
+      }).join('');
+      return;
+    }
+    setTopMatchesMessage('No top matches yet.');
+    return;
+  }
+  // Show recent jobs instead when none are scored
+  const recent = await api('/jobs?limit=5&sort=discovered_at&order=desc');
+  if (!recent) {
+    setTopMatchesMessage('Unable to load jobs.');
+    return;
+  }
+  if (Array.isArray(recent.jobs) && recent.jobs.length) {
+    container.innerHTML = recent.jobs.map(j => {
+      const loc = j.location || '';
+      const site = (j.site || '').replace(/_/g, ' ');
+      const safeUrl = encodeURIComponent(j.url);
+      return '<div class="activity-item" style="cursor:pointer" onclick="openDetail(\'' + safeUrl + '\')">' +
+        '<div style="flex:1"><div style="font-weight:600;font-size:13px">' + mdInline(j.title) + '</div>' +
+        '<div style="font-size:12px;color:var(--text-3);margin-top:2px">' + mdInline(site) + ' / ' + mdInline(loc) + '</div></div>' +
+        '<span class="score-badge score-none">-</span></div>';
+    }).join('');
+  } else {
+    setTopMatchesMessage('No jobs discovered yet. Run the pipeline to get started.');
+  }
+}
+
+function updateActivityFeed(stats) {
+  const feed = document.getElementById('activity-feed');
+  if (!feed) return;
+  const items = [];
+  if (stats.total > 0) {
+    const sourceList = Object.entries(stats.sources || {}).slice(0, 3).map(s => s[0]).join(', ');
+    items.push({dot:'blue', text:'<strong>Discovered</strong> ' + stats.total + ' jobs from ' + mdInline(sourceList), time: timeAgo(stats.last_discovered)});
+  }
+  if (stats.enriched > 0) {
+    const failed = stats.total - stats.enriched;
+    items.push({dot:'green', text:'<strong>Enriched</strong> ' + stats.enriched + ' of ' + stats.total + ' jobs' + (failed > 0 ? ' (' + failed + ' failed)' : ''), time:''});
+  }
+  if (stats.scored > 0) {
+    const suffix = minScoreLabelSuffix();
+    items.push({dot:'green', text:'<strong>Scored</strong> ' + stats.scored + ' jobs, ' + stats.scored_7plus + ' rated ' + mdInline(suffix || 'high'), time:''});
+  }
+  if (stats.tailored > 0) {
+    items.push({dot:'blue', text:'<strong>Tailored</strong> ' + stats.tailored + ' resumes', time:''});
+  }
+  if (stats.applied > 0) {
+    items.push({dot:'green', text:'<strong>Applied</strong> to ' + stats.applied + ' jobs', time:''});
+  }
+  if (!stats.scored && stats.enriched > 0) {
+    const msg = _geminiCliDetected === false
+      ? '<strong>Waiting</strong> to score jobs. Gemini CLI not detected, configure it in Settings to continue.'
+      : '<strong>Waiting</strong> to score jobs. Run the Score stage from Pipeline Controls to continue.';
+    items.push({dot:'yellow', text: msg, time:''});
+  }
+  if (items.length === 0) {
+    items.push({dot:'yellow', text:'<strong>Ready</strong> to start. Click Run Pipeline or go to Setup.', time:''});
+  }
+  feed.innerHTML = items.map(i =>
+    '<div class="activity-item"><div class="activity-dot ' + i.dot + '"></div>' +
+    '<div class="activity-text">' + i.text + '</div>' +
+    (i.time ? '<div class="activity-time">' + esc(i.time) + '</div>' : '') + '</div>'
+  ).join('');
+}
+
+function updatePipelineView(stats) {
+  const stages = getPipelineStages();
+  if (!stages.length) return;
+  stages.forEach(stage => {
+    const card = document.querySelector('#pipeline-card-list .pipeline-card[data-stage="' + stage + '"]');
+    if (!card) return;
+    const statsEl = card.querySelector('.pipeline-card-stats > div:first-child');
+    if (statsEl) statsEl.textContent = stageStatsText(stats, stage);
+    const fill = card.querySelector('.progress-fill');
+    if (fill) fill.style.width = stageProgressPercent(stats, stage) + '%';
+  });
+}
+
+function timeAgo(isoStr) {
+  if (!isoStr) return 'never';
+  const d = new Date(isoStr);
+  const now = new Date();
+  const mins = Math.floor((now - d) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function mdInline(value) {
+  let out = esc(String(value == null ? '' : value));
+  out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  return out;
+}
+
+function mdBlock(value) {
+  const raw = String(value == null ? '' : value).replace(/\r\n?/g, '\n').trim();
+  if (!raw) return '';
+  const lines = raw.split('\n');
+  const html = [];
+  let listType = '';
+  let inCode = false;
+  let codeLines = [];
+
+  function closeList() {
+    if (!listType) return;
+    html.push('</' + listType + '>');
+    listType = '';
+  }
+
+  function closeCode() {
+    if (!inCode) return;
+    html.push('<pre><code>' + codeLines.map(line => esc(line)).join('\n') + '</code></pre>');
+    inCode = false;
+    codeLines = [];
+  }
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('```')) {
+      closeList();
+      if (inCode) closeCode();
+      else inCode = true;
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+    if (!trimmed) {
+      closeList();
+      continue;
+    }
+
+    const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      closeList();
+      const level = heading[1].length;
+      html.push('<h' + level + '>' + mdInline(heading[2]) + '</h' + level + '>');
+      continue;
+    }
+    const quote = trimmed.match(/^>\s?(.+)$/);
+    if (quote) {
+      closeList();
+      html.push('<blockquote>' + mdInline(quote[1]) + '</blockquote>');
+      continue;
+    }
+    const ul = trimmed.match(/^[-*+]\s+(.+)$/);
+    if (ul) {
+      if (listType !== 'ul') {
+        closeList();
+        html.push('<ul>');
+        listType = 'ul';
+      }
+      html.push('<li>' + mdInline(ul[1]) + '</li>');
+      continue;
+    }
+    const ol = trimmed.match(/^\d+\.\s+(.+)$/);
+    if (ol) {
+      if (listType !== 'ol') {
+        closeList();
+        html.push('<ol>');
+        listType = 'ol';
+      }
+      html.push('<li>' + mdInline(ol[1]) + '</li>');
+      continue;
+    }
+
+    closeList();
+    html.push('<p>' + mdInline(trimmed) + '</p>');
+  }
+
+  closeList();
+  closeCode();
+  return html.join('');
+}
+
+function setMarkdownInline(el, value, fallback) {
+  if (!el) return;
+  const text = String(value == null ? '' : value).trim();
+  const fb = String(fallback == null ? '' : fallback);
+  el.innerHTML = '<span class="md-inline">' + mdInline(text || fb) + '</span>';
+}
+
+function setMarkdownBlock(el, value, fallback) {
+  if (!el) return;
+  const text = String(value == null ? '' : value).trim();
+  const fb = String(fallback == null ? '' : fallback);
+  el.innerHTML = '<div class="md-block">' + mdBlock(text || fb) + '</div>';
+}
+
+// ═══ VIEW SWITCHING ═══
+function switchView(view) {
+  closeDetail();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  const navEl = document.querySelector('[data-view="' + view + '"]');
+  if (navEl) navEl.classList.add('active');
+  closeSidebar();
+  if (view === 'jobs') loadJobs();
+  if (view === 'settings') loadSettings();
+  if (view === 'dashboard') loadDashboard();
+  if (view === 'pipeline') {
+    renderPipelineUi();
+    if (_cachedStats) updatePipelineView(_cachedStats);
+    else loadDashboard();
+  }
+}
+
+// ═══ JOBS TABLE ═══
+function toggleFilter(el, filter) {
+  document.querySelectorAll('#view-jobs .filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = filter;
+  loadJobs();
+}
+
+function filterJobs() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(loadJobs, 300);
+}
+
+async function loadJobs() {
+  const search = document.getElementById('job-search')?.value || '';
+  let params = '?limit=200&sort=fit_score&order=desc';
+  if (search) params += '&search=' + encodeURIComponent(search);
+  if (currentFilter === 'high') {
+    const highMin = getScoreFilterMin('high');
+    if (Number.isFinite(highMin)) params += '&min_score=' + encodeURIComponent(String(highMin));
+  }
+  if (currentFilter === 'mid') {
+    const midMin = getScoreFilterMin('mid');
+    const midMax = getScoreFilterMax('mid');
+    if (Number.isFinite(midMin)) params += '&min_score=' + encodeURIComponent(String(midMin));
+    if (Number.isFinite(midMax)) params += '&max_score=' + encodeURIComponent(String(midMax));
+  }
+  if (currentFilter === 'low') {
+    const lowMin = getScoreFilterMin('low');
+    const lowMax = getScoreFilterMax('low');
+    if (Number.isFinite(lowMin)) params += '&min_score=' + encodeURIComponent(String(lowMin));
+    if (Number.isFinite(lowMax)) params += '&max_score=' + encodeURIComponent(String(lowMax));
+  }
+  if (currentFilter === 'remote') params += '&location=remote';
+  if (currentFilter === 'applied') params += '&status=applied';
+
+  const data = await api('/jobs' + params);
+  if (!data) {
+    setJobsTableMessage('Unable to load jobs.');
+    return;
+  }
+  if (!Array.isArray(data.jobs)) {
+    setJobsTableMessage('No jobs data returned.');
+    return;
+  }
+  JOBS = data.jobs;
+  if (!JOBS.length) {
+    setJobsTableMessage('No jobs found for the current filters.');
+    return;
+  }
+  renderJobsTable(JOBS);
+}
+
+function renderJobsTable(jobs) {
+  const tbody = document.getElementById('jobs-tbody');
+  if (!tbody) return;
+  const statusMap = buildStatusClassMap();
+  tbody.innerHTML = jobs.map(j => {
+    const score = j.fit_score;
+    const scoreClass = scoreClassForValue(score);
+    const st = j.status || 'discovered';
+    const stLabel = st.charAt(0).toUpperCase() + st.slice(1);
+    const loc = j.location || '';
+    const sal = j.salary || '';
+    const site = (j.site || '').replace(/_/g,' ');
+    const safeUrl = encodeURIComponent(j.url);
+    return '<tr onclick="openDetail(\'' + safeUrl + '\')">' +
+      '<td data-label="Tier"><span class="tier-badge" style="font-size:10px">' + mdInline(j.strategy || '') + '</span></td>' +
+      '<td data-label="Position"><div class="job-title-cell">' + mdInline(j.title) + '</div><div class="job-company">' + mdInline(site) + '</div></td>' +
+      '<td data-label="Location" class="job-location">' + mdInline(loc) + '</td>' +
+      '<td data-label="Salary" class="job-salary">' + mdInline(sal) + '</td>' +
+      '<td data-label="Score"><span class="score-badge ' + scoreClass + '">' + (score || '-') + '</span></td>' +
+      '<td data-label="Status"><span class="status-pill ' + (statusMap[st]||'') + '"><span class="status-dot"></span>' + stLabel + '</span></td>' +
+      '<td data-label="Source" style="font-size:11px;color:var(--text-3)">' + mdInline(site) + '</td></tr>';
+  }).join('');
+}
+
+function exportCSV() {
+  window.open(API + '/jobs/export', '_blank');
+}
+
+// ═══ JOB DETAIL ═══
+async function openDetail(encodedUrl) {
+  let url = '';
+  try {
+    url = decodeURIComponent(String(encodedUrl || ''));
+  } catch (e) {
+    console.error('Failed to decode job url', e);
+  }
+  if (!url || url === 'undefined') {
+    toast('Unable to open job details, missing URL.', 'error');
+    return;
+  }
+  const j = await api('/jobs/detail?url=' + encodeURIComponent(url));
+  if (!j) return;
+
+  setMarkdownInline(document.getElementById('detail-title'), j.title || '');
+  const site = (j.site || '').replace(/_/g, ' ');
+  document.getElementById('detail-meta').innerHTML =
+    '<span class="md-inline">' + mdInline(site) + '</span><span style="color:var(--text-3)">|</span><span class="md-inline">' + mdInline(j.location || '') + '</span>' +
+    (j.salary ? '<span style="color:var(--text-3)">|</span><span class="md-inline" style="font-family:var(--mono)">' + mdInline(j.salary) + '</span>' : '');
+
+  const score = j.fit_score;
+  const scoreBar = document.getElementById('detail-score-bar');
+  if (score) {
+    const scoreClass = scoreClassForValue(score);
+    const scoreColor = scoreClass === 'score-high' ? 'var(--green)' : scoreClass === 'score-mid' ? 'var(--yellow)' : 'var(--red)';
+    scoreBar.innerHTML = '<div class="detail-score-num" style="color:' + scoreColor + '">' + score +
+      '<span style="font-size:16px;color:var(--text-3)">/10</span></div>' +
+      '<div style="flex:1"><div class="detail-score-label">Fit Score</div>' +
+      '<div style="height:4px;background:var(--bg-4);border-radius:2px;margin-top:6px;overflow:hidden">' +
+      '<div style="height:100%;width:' + (score*10) + '%;background:' + scoreColor + ';border-radius:2px"></div></div></div>';
+    scoreBar.parentElement.style.display = 'block';
+  } else {
+    scoreBar.parentElement.style.display = 'none';
+  }
+
+  const reasoningEl = document.getElementById('detail-reasoning');
+  if (j.score_reasoning) {
+    setMarkdownBlock(reasoningEl, j.score_reasoning);
+    reasoningEl.parentElement.style.display = 'block';
+  } else {
+    reasoningEl.parentElement.style.display = 'none';
+  }
+
+  setMarkdownBlock(document.getElementById('detail-desc'), j.full_description || j.description || 'No description available.');
+
+  const resumeSection = document.getElementById('detail-resume-section');
+  if (j.tailored_resume_text) {
+    resumeSection.style.display = 'block';
+    setMarkdownBlock(document.getElementById('detail-resume'), j.tailored_resume_text);
+  } else {
+    resumeSection.style.display = 'none';
+  }
+
+  const postingUrl = String(j.url || url || '').trim();
+  const applyUrl = String(j.application_url || postingUrl || '').trim();
+  const viewBtn = byId('detail-view-posting-btn');
+  const applyBtn = byId('detail-apply-btn');
+  if (viewBtn) {
+    viewBtn.disabled = !postingUrl;
+    viewBtn.onclick = postingUrl ? (() => window.open(postingUrl, '_blank', 'noopener')) : null;
+  }
+  if (applyBtn) {
+    applyBtn.disabled = !applyUrl;
+    applyBtn.onclick = applyUrl ? (() => window.open(applyUrl, '_blank', 'noopener')) : null;
+  }
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.body.classList.add('detail-open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.body.classList.remove('detail-open');
+}
+
+// ═══ SETTINGS ═══
+let _currentProfile = {};
+let _currentSearches = {};
+let _currentResumeText = '';
+let _boardCatalog = [];
+let _currentEnvConfig = {
+  CAPSOLVER_API_KEY: '',
+  capsolver_configured: false,
+  capsolver_masked: ''
+};
+
+function byId(id) {
+  return document.getElementById(id);
+}
+
+function cloneObj(obj) {
+  return obj && typeof obj === 'object' ? JSON.parse(JSON.stringify(obj)) : {};
+}
+
+function setFieldValue(id, value) {
+  const el = byId(id);
+  if (el) el.value = value == null ? '' : String(value);
+}
+
+function escAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function normalizeBoardName(name) {
+  const raw = String(name || '').trim().toLowerCase();
+  if (!raw) return '';
+  const normalized = raw
+    .replace(/[\s-]+/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
+  if (normalized === 'ziprecruiter') return 'zip_recruiter';
+  if (normalized === 'googlejobs') return 'google';
+  return normalized;
+}
+
+function boardId(board) {
+  return normalizeBoardName((board && (board.id || board.slug || board.key)) || (board && board.name) || '');
+}
+
+function boardLabel(board, fallbackId) {
+  const name = String((board && board.name) || '').trim();
+  if (name) return name;
+  return String(fallbackId || '').replace(/_/g, ' ');
+}
+
+function boardGroupLabel(board) {
+  const source = String((board && board.source) || '').toLowerCase();
+  const type = String((board && board.type) || '').toLowerCase();
+  if (source === 'jobspy') return 'Major Boards';
+  if (type === 'search') return 'Searchable Sites';
+  if (type === 'static' || type === 'rss') return 'Static/RSS Feeds';
+  if (source) {
+    return source
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, ch => ch.toUpperCase());
+  }
+  return 'Other Sources';
+}
+
+function selectedBoardsFromSearches(searches) {
+  const data = searches && typeof searches === 'object' ? searches : {};
+  const hasBoards = Array.isArray(data.boards);
+  const hasSites = Array.isArray(data.sites);
+  if (!hasBoards && !hasSites) return null;
+  const fromConfig = hasBoards ? data.boards : data.sites;
+  return fromConfig.map(normalizeBoardName).filter(Boolean);
+}
+
+function renderBoardsInContainer(containerSelector, selectedBoards) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+  if (!_boardCatalog.length) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-3)">No discovery boards available.</div>';
+    return;
+  }
+  const hasExplicitSelection = Array.isArray(selectedBoards);
+  const selected = new Set((hasExplicitSelection ? selectedBoards : []).map(normalizeBoardName).filter(Boolean));
+  const useDefaults = !hasExplicitSelection;
+
+  const groups = new Map();
+  _boardCatalog.forEach(board => {
+    const id = boardId(board);
+    if (!id) return;
+    const group = boardGroupLabel(board);
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push({
+      id,
+      name: boardLabel(board, id),
+      source: String(board.source || ''),
+      type: String(board.type || ''),
+      blocked: Boolean(board.blocked),
+      blockedReason: String(board.block_reason || board.blocked_reason || '').trim() || 'anti-bot protection'
+    });
+  });
+
+  const html = Array.from(groups.entries()).map(([group, boards]) => {
+    const rows = boards.map(board => {
+      const checked = !board.blocked && (useDefaults ? true : selected.has(board.id));
+      const note = board.blocked
+        ? 'Blocked: ' + board.blockedReason
+        : [board.source, board.type].filter(Boolean).join(' / ');
+      return '<label class="board-option' + (checked ? ' active' : '') + (board.blocked ? ' blocked' : '') + '"' +
+        (board.blocked ? ' title="' + escAttr('Blocked: ' + board.blockedReason) + '"' : '') + '>' +
+        '<input type="checkbox" data-board="' + escAttr(board.id) + '"' + (checked ? ' checked' : '') + (board.blocked ? ' disabled' : '') + '>' +
+        '<span class="board-pill-text"><span class="board-pill-name md-inline">' + mdInline(board.name) + '</span>' +
+        '<span class="board-pill-note md-inline">' + mdInline(note) + '</span></span></label>';
+    }).join('');
+    return '<div class="board-group"><div class="board-group-title md-inline">' + mdInline(group) + '</div>' +
+      '<div class="board-pill-grid">' + rows + '</div></div>';
+  }).join('');
+
+  container.innerHTML = html;
+  wireBoardPills(containerSelector);
+}
+
+function renderBoardsForCurrentConfig() {
+  const selected = selectedBoardsFromSearches(_currentSearches);
+  renderBoardsInContainer('#settings-board-pills', selected);
+  renderBoardsInContainer('#setup-board-pills', selected);
+}
+
+async function ensureBoardsLoaded(force) {
+  if (_boardCatalog.length && !force) {
+    return _boardCatalog;
+  }
+  const data = await api('/boards');
+  if (!data || !Array.isArray(data.boards)) {
+    _boardCatalog = [];
+    const msg = '<div style="font-size:12px;color:var(--red)">Unable to load discovery boards.</div>';
+    const settingsContainer = byId('settings-board-pills');
+    const setupContainer = byId('setup-board-pills');
+    if (settingsContainer) settingsContainer.innerHTML = msg;
+    if (setupContainer) setupContainer.innerHTML = msg;
+    return null;
+  }
+  _boardCatalog = data.boards
+    .map(board => ({
+      id: boardId(board),
+      name: String((board && board.name) || ''),
+      source: String((board && board.source) || ''),
+      type: String((board && board.type) || ''),
+      blocked: Boolean(board && board.blocked),
+      blocked_reason: String((board && (board.block_reason || board.blocked_reason)) || '')
+    }))
+    .filter(board => board.id);
+  renderBoardsForCurrentConfig();
+  return _boardCatalog;
+}
+
+function syncBoardPillFromInput(input) {
+  const label = input.closest('.filter-pill, .board-option');
+  if (label) label.classList.toggle('active', Boolean(input.checked));
+}
+
+function wireBoardPills(containerSelector) {
+  const inputs = document.querySelectorAll(containerSelector + ' input[type="checkbox"][data-board]');
+  inputs.forEach(input => {
+    if (input.dataset.wiredBoardPill === '1') return;
+    input.dataset.wiredBoardPill = '1';
+    input.addEventListener('change', () => syncBoardPillFromInput(input));
+    syncBoardPillFromInput(input);
+  });
+}
+
+function setBoardsInContainer(containerSelector, boards) {
+  renderBoardsInContainer(containerSelector, Array.isArray(boards) ? boards : null);
+}
+
+function readBoardsFromContainer(containerSelector) {
+  return Array.from(document.querySelectorAll(containerSelector + ' input[type="checkbox"][data-board]'))
+    .filter(input => input.checked)
+    .map(input => normalizeBoardName(input.dataset.board))
+    .filter(Boolean);
+}
+
+function parseCityState(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return { city: '', state: '' };
+  const parts = raw.split(',');
+  const city = (parts[0] || '').trim();
+  const state = parts.slice(1).join(',').trim();
+  return { city, state };
+}
+
+function formatCityState(city, state) {
+  const c = String(city || '').trim();
+  const s = String(state || '').trim();
+  if (c && s) return c + ', ' + s;
+  return c || s;
+}
+
+function loadProfileIntoSettings(profile) {
+  const p = (profile && profile.personal) || {};
+  const exp = (profile && profile.experience) || {};
+  const comp = (profile && profile.compensation) || {};
+  setFieldValue('settings-full-name', p.full_name || '');
+  setFieldValue('settings-preferred-name', p.preferred_name || '');
+  setFieldValue('settings-email', p.email || '');
+  setFieldValue('settings-phone', p.phone || '');
+  setFieldValue('settings-city', p.city || '');
+  setFieldValue('settings-state', p.province_state || '');
+  setFieldValue('settings-target-role', exp.target_role || '');
+  setFieldValue('settings-years-experience', exp.years_of_experience_total || '');
+  setFieldValue('settings-salary-min', comp.salary_range_min || '');
+  setFieldValue('settings-salary-max', comp.salary_range_max || '');
+  updateUserIdentity(profile);
+  renderSkillsBoundary(profile);
+  setFieldValue('settings-resume-text', _currentResumeText || '');
+  setPipelineMinScoreInput(getProfileMinScore(profile));
+}
+
+function buildProfileFromSettings(baseProfile) {
+  const profile = cloneObj(baseProfile);
+  profile.personal = profile.personal || {};
+  profile.experience = profile.experience || {};
+  profile.compensation = profile.compensation || {};
+  profile.personal.full_name = (byId('settings-full-name')?.value || '').trim();
+  profile.personal.preferred_name = (byId('settings-preferred-name')?.value || '').trim();
+  profile.personal.email = (byId('settings-email')?.value || '').trim();
+  profile.personal.phone = (byId('settings-phone')?.value || '').trim();
+  profile.personal.city = (byId('settings-city')?.value || '').trim();
+  profile.personal.province_state = (byId('settings-state')?.value || '').trim();
+  profile.experience.target_role = (byId('settings-target-role')?.value || '').trim();
+  profile.experience.years_of_experience_total = (byId('settings-years-experience')?.value || '').trim();
+  profile.compensation.salary_range_min = (byId('settings-salary-min')?.value || '').trim();
+  profile.compensation.salary_range_max = (byId('settings-salary-max')?.value || '').trim();
+  profile.skills_boundary = readSkillsBoundaryFromSettings();
+  return profile;
+}
+
+async function loadSettings() {
+  await ensureBoardsLoaded();
+  const [profile, searches, resume] = await Promise.all([
+    api('/config/profile'),
+    api('/config/searches'),
+    api('/config/resume')
+  ]);
+  if (!profile || !searches) return;
+  _currentProfile = profile && typeof profile === 'object' ? profile : {};
+  _currentSearches = searches && typeof searches === 'object' ? searches : {};
+  _currentResumeText = resume && typeof resume.text === 'string' ? resume.text : '';
+  renderBoardsForCurrentConfig();
+  loadProfileIntoSettings(_currentProfile);
+  loadSearchesIntoSettings(_currentSearches);
+  syncSetupFromConfig();
+  await loadCapsolverSettings();
+  await loadSystemCheck();
+}
+
+async function saveSettings() {
+  const profile = buildProfileFromSettings(_currentProfile);
+  const searches = buildSearchesFromSettings(_currentSearches);
+  const resumeText = byId('settings-resume-text')?.value || '';
+  const [profileResp, searchesResp, resumeResp, capsolverResp] = await Promise.all([
+    api('/config/profile', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(profile)
+    }),
+    api('/config/searches', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(searches)
+    }),
+    api('/config/resume', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text: resumeText})
+    }),
+    persistCapsolverSettings()
+  ]);
+  if (!profileResp || !searchesResp || !resumeResp || !capsolverResp) return;
+  _currentProfile = profile;
+  _currentSearches = searches;
+  _currentResumeText = resumeText;
+  updateUserIdentity(_currentProfile);
+  syncSetupFromConfig();
+  toast('Settings saved', 'success');
+}
+
+function normalizeTier(tier) {
+  const options = getTierOrder();
+  const fallback = options.length ? options[0] : 1;
+  const n = parseInt(tier, 10);
+  if (!Number.isFinite(n)) return fallback;
+  if (!options.length) return n;
+  return options.includes(n) ? n : fallback;
+}
+
+function renderTierOptions(selectedTier) {
+  const options = getTierOrder();
+  const fallback = normalizeTier(selectedTier);
+  const values = options.length ? options : [fallback];
+  return values.map(t => (
+    '<option value="' + t + '"' + (t === fallback ? ' selected' : '') + '>' + esc(getTierLabel(t)) + '</option>'
+  )).join('');
+}
+
+function renderQueries(queries) {
+  const list = byId('query-list');
+  if (!list) return;
+  const rows = Array.isArray(queries) ? queries : [];
+  if (!rows.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-3);padding:8px 0">No queries yet, click Add Query.</div>';
+    return;
+  }
+  list.innerHTML = rows.map(q => {
+    const query = String((q && q.query) || '');
+    const t = normalizeTier(q && q.tier);
+    return '<div data-query-row style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-3);border-radius:var(--radius);margin-bottom:6px">' +
+      '<span class="tier-badge tier-' + t + '">T' + t + '</span>' +
+      '<input class="form-input query-text" style="flex:1;padding:4px 6px;font-size:12px" value="' + escAttr(query) + '">' +
+      '<select class="form-input query-tier" onchange="updateQueryTierBadge(this)" style="width:80px;padding:4px 6px;font-size:11px">' +
+      renderTierOptions(t) + '</select>' +
+      '<button class="btn btn-sm btn-ghost" style="color:var(--red);padding:4px 6px" onclick="removeQueryRow(this)">x</button></div>';
+  }).join('');
+}
+
+function updateQueryTierBadge(selectEl) {
+  const row = selectEl.closest('[data-query-row]');
+  if (!row) return;
+  const tier = normalizeTier(selectEl.value);
+  selectEl.value = String(tier);
+  const badge = row.querySelector('.tier-badge');
+  if (badge) {
+    badge.className = 'tier-badge tier-' + tier;
+    badge.textContent = 'T' + tier;
+  }
+}
+
+function removeQueryRow(btn) {
+  const row = btn.closest('[data-query-row]');
+  if (row) row.remove();
+  if (!document.querySelector('#query-list [data-query-row]')) renderQueries([]);
+}
+
+function getSearchQueriesFromUI() {
+  return Array.from(document.querySelectorAll('#query-list [data-query-row]'))
+    .map(row => {
+      const query = (row.querySelector('.query-text')?.value || '').trim();
+      const tier = normalizeTier(row.querySelector('.query-tier')?.value || 1);
+      return {query, tier};
+    })
+    .filter(q => q.query);
+}
+
+function addQueryRow() {
+  const queries = getSearchQueriesFromUI();
+  queries.push({query: '', tier: normalizeTier(null)});
+  renderQueries(queries);
+  const rows = document.querySelectorAll('#query-list [data-query-row]');
+  const last = rows[rows.length - 1];
+  const input = last ? last.querySelector('.query-text') : null;
+  if (input) input.focus();
+}
+
+function loadSearchesIntoSettings(searches) {
+  const data = searches && typeof searches === 'object' ? searches : {};
+  renderQueries(Array.isArray(data.queries) ? data.queries : []);
+  const locations = Array.isArray(data.locations) ? data.locations : [];
+  const primary = locations.find(l => l && l.location && l.remote === false) ||
+    locations.find(l => l && l.location && String(l.location).toLowerCase() !== 'remote');
+  const includeRemote = locations.some(l => l && (l.remote === true || String(l.location || '').toLowerCase() === 'remote'));
+  setFieldValue('settings-primary-location', primary ? primary.location : '');
+  setFieldValue('settings-include-remote', includeRemote ? 'Yes' : 'No');
+  setBoardsInContainer('#settings-board-pills', selectedBoardsFromSearches(data));
+}
+
+function buildSearchesFromSettings(baseSearches) {
+  const searches = cloneObj(baseSearches);
+  searches.queries = getSearchQueriesFromUI();
+
+  const locations = [];
+  const primaryLocation = (byId('settings-primary-location')?.value || '').trim();
+  const includeRemote = (byId('settings-include-remote')?.value || 'Yes') === 'Yes';
+  if (primaryLocation) locations.push({location: primaryLocation, remote: false});
+  if (includeRemote) locations.push({location: 'Remote', remote: true});
+  searches.locations = locations;
+  searches.boards = readBoardsFromContainer('#settings-board-pills');
+  searches.sites = Array.isArray(searches.boards) ? [...searches.boards] : [];
+  return searches;
+}
+
+function setCapsolverStatus(config) {
+  const statusEl = byId('capsolver-status');
+  if (!statusEl) return;
+  const configured = Boolean(config && config.capsolver_configured);
+  const masked = String((config && config.capsolver_masked) || '');
+  if (configured) {
+    statusEl.textContent = masked ? ('Status: configured (' + masked + ')') : 'Status: configured';
+    statusEl.style.color = 'var(--green)';
+  } else {
+    statusEl.textContent = 'Status: not configured';
+    statusEl.style.color = 'var(--text-2)';
+  }
+}
+
+async function loadCapsolverSettings() {
+  const data = await api('/config/env');
+  if (!data || typeof data !== 'object') {
+    setCapsolverStatus({capsolver_configured: false, capsolver_masked: ''});
+    return;
+  }
+  _currentEnvConfig = data;
+  const key = String(data.CAPSOLVER_API_KEY || '');
+  setFieldValue('settings-capsolver-key', key);
+  setCapsolverStatus(data);
+}
+
+async function persistCapsolverSettings(options) {
+  const opts = options || {};
+  const key = (byId('settings-capsolver-key')?.value || '').trim();
+  const data = await api('/config/env', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({CAPSOLVER_API_KEY: key})
+  }, {silent: Boolean(opts.silent)});
+  if (!data) return null;
+  _currentEnvConfig = data;
+  setCapsolverStatus(data);
+  return data;
+}
+
+async function saveCapsolverSettings() {
+  const saved = await persistCapsolverSettings();
+  if (!saved) return;
+  toast('CapSolver settings saved', 'success');
+}
+
+function toggleCapsolverHelp() {
+  const helpEl = byId('capsolver-help');
+  const btn = byId('capsolver-help-toggle');
+  if (!helpEl) return;
+  const open = helpEl.style.display !== 'none';
+  helpEl.style.display = open ? 'none' : 'block';
+  if (btn) btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+}
+
+function toggleCapsolverKeyVisibility() {
+  const input = byId('settings-capsolver-key');
+  const btn = byId('capsolver-key-visibility');
+  if (!input) return;
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  if (btn) btn.textContent = show ? 'Hide' : 'Show';
+}
+
+async function loadSystemCheck() {
+  const data = await api('/system/check');
+  if (!data || !Array.isArray(data.checks)) return;
+  const container = document.querySelector('#settings-system .settings-section:first-child');
+  if (!container) return;
+  const title = container.querySelector('.settings-section-title');
+  container.innerHTML = '';
+  if (title) container.appendChild(title);
+  else { const t = document.createElement('div'); t.className = 'settings-section-title'; t.textContent = 'System Requirements'; container.appendChild(t); }
+  data.checks.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'system-check';
+    div.innerHTML = '<div class="check-icon ' + (c.ok ? 'check-ok' : 'check-missing') + '">' + (c.ok ? 'OK' : '!') + '</div>' +
+      '<div><div class="check-name md-inline">' + mdInline(c.name) + '</div><div class="check-detail md-inline">' + mdInline(c.detail) + '</div></div>';
+    container.appendChild(div);
+  });
+  const dbCheck = data.checks.find(c => c && c.name === 'Database');
+  const searchesCheck = data.checks.find(c => c && c.name === 'Searches');
+  setFieldValue('settings-db-location', dbCheck && dbCheck.detail ? dbCheck.detail : '');
+  if (searchesCheck && searchesCheck.detail) {
+    const path = String(searchesCheck.detail);
+    const idx = path.lastIndexOf('/');
+    setFieldValue('settings-config-dir', idx > 0 ? path.slice(0, idx + 1) : path);
+  } else {
+    setFieldValue('settings-config-dir', '');
+  }
+  const geminiCheck = data.checks.find(c => c && c.name === 'Gemini CLI');
+  _geminiCliDetected = geminiCheck ? Boolean(geminiCheck.ok) : null;
+  const geminiStatus = byId('settings-gemini-status');
+  if (geminiStatus) {
+    if (geminiCheck) {
+      geminiStatus.innerHTML = '<div class="check-icon ' + (geminiCheck.ok ? 'check-ok' : 'check-missing') + '">' + (geminiCheck.ok ? 'OK' : '!') + '</div>' +
+        '<div><div class="check-name md-inline">' + mdInline(geminiCheck.name) + '</div><div class="check-detail md-inline">' + mdInline(geminiCheck.detail) + '</div></div>';
+    } else {
+      geminiStatus.innerHTML = '<div class="check-icon check-missing">!</div>' +
+        '<div><div class="check-name">Gemini CLI</div><div class="check-detail">Status unavailable</div></div>';
+    }
+  }
+}
+
+// ═══ SETTINGS TABS ═══
+function switchSettingsTab(el, tabId) {
+  document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  ['settings-profile','settings-search','settings-gemini','settings-system'].forEach(id => {
+    document.getElementById(id).style.display = id === tabId ? 'block' : 'none';
+  });
+  if (tabId === 'settings-search') ensureBoardsLoaded();
+  if (tabId === 'settings-gemini') loadCapsolverSettings();
+}
+
+async function openConfigFolder() {
+  const data = await api('/system/open-config', {method: 'POST'});
+  if (!data) return;
+  toast('Opened config folder: ' + (data.path || ''), 'success');
+}
+
+async function resetDatabase() {
+  const ok = window.confirm('Reset database and delete all discovered jobs, scores, and apply history?');
+  if (!ok) return;
+  const data = await api('/system/reset-database', {method: 'POST'});
+  if (!data) return;
+  toast('Database reset complete', 'warning');
+  await loadDashboard();
+  if (document.querySelector('#view-jobs.active')) await loadJobs();
+  closeDetail();
+}
+
+// ═══ PIPELINE ═══
+let _pipelineRunning = false;
+
+async function runStage(stage) {
+  if (_pipelineRunning) { toast('Pipeline already running', 'warning'); return; }
+  const ms = getPipelineMinScoreInput();
+  const workers = getPipelineWorkersInput();
+  const dryRun = getPipelineDryRunInput();
+  setPipelineMinScoreInput(ms);
+  setPipelineWorkersInput(workers);
+  const data = await api('/pipeline/run?stages=' + encodeURIComponent(stage) + '&min_score=' + encodeURIComponent(String(ms)) + '&workers=' + encodeURIComponent(String(workers)) + '&dry_run=' + encodeURIComponent(String(dryRun)), {
+    method: 'POST'
+  });
+  if (!data) return;
+  if (data && data.ok) {
+    _pipelineRunning = true;
+    toast('Pipeline started: ' + stage, 'info');
+    pollPipelineStatus();
+  } else {
+    toast('Unable to start pipeline stage', 'error');
+  }
+}
+
+async function runAllStages() {
+  const ms = getPipelineMinScoreInput();
+  const workers = getPipelineWorkersInput();
+  const dryRun = getPipelineDryRunInput();
+  setPipelineMinScoreInput(ms);
+  setPipelineWorkersInput(workers);
+  if (_pipelineRunning) { toast('Pipeline already running', 'warning'); return; }
+  const stages = getPipelineStages();
+  if (!stages.length) {
+    toast('Pipeline stages are not loaded yet', 'error');
+    return;
+  }
+  const data = await api('/pipeline/run?stages=' + encodeURIComponent(stages.join(',')) + '&min_score=' + encodeURIComponent(String(ms)) + '&workers=' + encodeURIComponent(String(workers)) + '&dry_run=' + encodeURIComponent(String(dryRun)), {
+    method: 'POST'
+  });
+  if (!data) return;
+  if (data && data.ok) {
+    _pipelineRunning = true;
+    toast('Full pipeline started', 'info');
+    pollPipelineStatus();
+  } else {
+    toast('Unable to start full pipeline', 'error');
+  }
+}
+
+async function handlePipelineMinScoreChange() {
+  const ms = getPipelineMinScoreInput();
+  setPipelineMinScoreInput(ms);
+  const latestProfile = await api('/config/profile');
+  if (!latestProfile || typeof latestProfile !== 'object') return;
+  latestProfile.min_score = ms;
+  const saved = await api('/config/profile', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(latestProfile)
+  });
+  if (!saved) return;
+  _currentProfile = latestProfile;
+}
+
+async function stopPipeline() {
+  const data = await api('/pipeline/stop', {method: 'POST'});
+  if (!data) return;
+  _pipelineRunning = false;
+  toast('Pipeline stopped', 'warning');
+}
+
+async function pollPipelineStatus() {
+  const data = await api('/pipeline/status');
+  if (!data) {
+    if (_pipelineRunning) setTimeout(pollPipelineStatus, getPollIntervalMs());
+    return;
+  }
+  if (data && data.running) {
+    setTimeout(pollPipelineStatus, getPollIntervalMs());
+  } else {
+    _pipelineRunning = false;
+    if (data && data.output) {
+      toast('Pipeline finished', 'success');
+    }
+    loadDashboard();
+  }
+}
+
+// ═══ SETUP WIZARD ═══
+let setupStep = 0;
+let _setupLoaded = false;
+
+function loadProfileIntoSetup(profile) {
+  const p = (profile && profile.personal) || {};
+  const exp = (profile && profile.experience) || {};
+  const comp = (profile && profile.compensation) || {};
+  setFieldValue('setup-full-name', p.full_name || '');
+  setFieldValue('setup-email', p.email || '');
+  setFieldValue('setup-phone', p.phone || '');
+  setFieldValue('setup-city-state', formatCityState(p.city, p.province_state));
+  setFieldValue('setup-target-role', exp.target_role || '');
+  setFieldValue('setup-salary-min', comp.salary_range_min || '');
+  setFieldValue('setup-salary-max', comp.salary_range_max || '');
+}
+
+function loadSearchesIntoSetup(searches) {
+  const data = searches && typeof searches === 'object' ? searches : {};
+  const queries = Array.isArray(data.queries) ? data.queries.map(q => (q && q.query) || '').filter(Boolean) : [];
+  setFieldValue('setup-search-queries', queries.join('\n'));
+
+  const locations = Array.isArray(data.locations) ? data.locations : [];
+  const primary = locations.find(l => l && l.location && l.remote === false) ||
+    locations.find(l => l && l.location && String(l.location).toLowerCase() !== 'remote');
+  const includeRemote = locations.some(l => l && (l.remote === true || String(l.location || '').toLowerCase() === 'remote'));
+  setFieldValue('setup-location', primary ? primary.location : '');
+  setFieldValue('setup-include-remote', includeRemote ? 'Yes' : 'No');
+  setBoardsInContainer('#setup-board-pills', selectedBoardsFromSearches(data));
+}
+
+function syncSetupFromConfig() {
+  loadProfileIntoSetup(_currentProfile);
+  loadSearchesIntoSetup(_currentSearches);
+  setFieldValue('setup-resume-text', _currentResumeText || '');
+}
+
+function buildProfileFromSetup(baseProfile) {
+  const profile = cloneObj(baseProfile);
+  profile.personal = profile.personal || {};
+  profile.experience = profile.experience || {};
+  profile.compensation = profile.compensation || {};
+  const cityState = parseCityState(byId('setup-city-state')?.value || '');
+  profile.personal.full_name = (byId('setup-full-name')?.value || '').trim();
+  profile.personal.email = (byId('setup-email')?.value || '').trim();
+  profile.personal.phone = (byId('setup-phone')?.value || '').trim();
+  profile.personal.city = cityState.city;
+  profile.personal.province_state = cityState.state;
+  profile.experience.target_role = (byId('setup-target-role')?.value || '').trim();
+  profile.compensation.salary_range_min = (byId('setup-salary-min')?.value || '').trim();
+  profile.compensation.salary_range_max = (byId('setup-salary-max')?.value || '').trim();
+  return profile;
+}
+
+function buildSearchesFromSetup(baseSearches) {
+  const searches = cloneObj(baseSearches);
+  const rawLines = (byId('setup-search-queries')?.value || '').split('\n');
+  searches.queries = rawLines.map(line => line.trim()).filter(Boolean).map(query => ({query, tier: 1}));
+
+  const locations = [];
+  const primaryLocation = (byId('setup-location')?.value || '').trim();
+  const includeRemote = (byId('setup-include-remote')?.value || 'Yes') === 'Yes';
+  if (primaryLocation) locations.push({location: primaryLocation, remote: false});
+  if (includeRemote) locations.push({location: 'Remote', remote: true});
+  searches.locations = locations;
+  searches.boards = readBoardsFromContainer('#setup-board-pills');
+  searches.sites = Array.isArray(searches.boards) ? [...searches.boards] : [];
+  return searches;
+}
+
+async function loadSetupData() {
+  await ensureBoardsLoaded();
+  const [profile, searches, resume] = await Promise.all([
+    api('/config/profile'),
+    api('/config/searches'),
+    api('/config/resume')
+  ]);
+  if (!profile || !searches || !resume) return false;
+  _currentProfile = profile && typeof profile === 'object' ? profile : {};
+  _currentSearches = searches && typeof searches === 'object' ? searches : {};
+  _currentResumeText = resume && typeof resume.text === 'string' ? resume.text : '';
+  loadProfileIntoSettings(_currentProfile);
+  loadSearchesIntoSettings(_currentSearches);
+  syncSetupFromConfig();
+  return true;
+}
+
+async function loadSetupSystemCheck() {
+  const data = await api('/system/check');
+  if (!data || !Array.isArray(data.checks)) return;
+  const container = byId('setup-system-checks');
+  if (!container) return;
+  container.innerHTML = '';
+  data.checks.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'system-check';
+    div.innerHTML = '<div class="check-icon ' + (c.ok ? 'check-ok' : 'check-missing') + '">' + (c.ok ? 'OK' : '!') + '</div>' +
+      '<div><div class="check-name md-inline">' + mdInline(c.name) + '</div><div class="check-detail md-inline">' + mdInline(c.detail) + '</div></div>';
+    container.appendChild(div);
+  });
+}
+
+async function saveSetupResume() {
+  const text = byId('setup-resume-text')?.value || '';
+  _currentResumeText = text;
+  const data = await api('/config/resume', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: text})
+  });
+  return Boolean(data);
+}
+
+async function saveSetupProfile() {
+  const profile = buildProfileFromSetup(_currentProfile);
+  const data = await api('/config/profile', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(profile)
+  });
+  if (!data) return false;
+  _currentProfile = profile;
+  loadProfileIntoSettings(profile);
+  return true;
+}
+
+async function saveSetupSearches() {
+  const searches = buildSearchesFromSetup(_currentSearches);
+  const data = await api('/config/searches', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(searches)
+  });
+  if (!data) return false;
+  _currentSearches = searches;
+  loadSearchesIntoSettings(searches);
+  return true;
+}
+
+async function saveSetupStep(step) {
+  if (step === 1) return saveSetupResume();
+  if (step === 2) return saveSetupProfile();
+  if (step === 3) return saveSetupSearches();
+  return true;
+}
+
+async function openSetup() {
+  closeSidebar();
+  if (!_setupLoaded) {
+    const dropZone = byId('setup-resume-drop-zone');
+    const fileInput = byId('setup-resume-file');
+    if (dropZone && fileInput && fileInput.dataset.wiredResumeUpload !== '1') {
+      fileInput.dataset.wiredResumeUpload = '1';
+      const onFile = async (file) => {
+        if (!file) return;
+        if (!file.name.toLowerCase().endsWith('.txt')) {
+          toast('Only .txt files are supported in setup, paste PDF text manually.', 'warning');
+          return;
+        }
+        const text = await file.text();
+        setFieldValue('setup-resume-text', text);
+      };
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('dragover', e => e.preventDefault());
+      dropZone.addEventListener('drop', async e => {
+        e.preventDefault();
+        const file = e.dataTransfer?.files?.[0];
+        await onFile(file);
+      });
+      fileInput.addEventListener('change', async e => {
+        const file = e.target.files?.[0];
+        await onFile(file);
+      });
+    }
+    _setupLoaded = true;
+  }
+  const loaded = await loadSetupData();
+  if (!loaded) return;
+  await loadSetupSystemCheck();
+  setupStep = 0;
+  updateSetupStep();
+  byId('setup-overlay').classList.add('open');
+}
+
+function closeSetup() {
+  byId('setup-overlay').classList.remove('open');
+}
+
+async function nextSetupStep() {
+  const ok = await saveSetupStep(setupStep);
+  if (!ok) return;
+  if (setupStep < 3) {
+    setupStep++;
+    updateSetupStep();
+  }
+}
+
+function prevSetupStep() {
+  if (setupStep > 0) { setupStep--; updateSetupStep(); }
+}
+
+async function finishSetup() {
+  const ok = await saveSetupStep(setupStep);
+  if (!ok) return;
+  closeSetup();
+  await loadSettings();
+  toast('Setup complete', 'success');
+}
+
+function updateSetupStep() {
+  for (let i = 0; i <= 3; i++) {
+    byId('step-' + i).style.display = i === setupStep ? 'block' : 'none';
+    const dot = byId('dot-' + i);
+    dot.className = 'setup-step-dot' + (i < setupStep ? ' done' : i === setupStep ? ' current' : '');
+  }
+}
+
+// ═══ KEYBOARD SHORTCUTS ═══
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (byId('setup-overlay')?.classList.contains('open')) closeSetup();
+    closeDetail();
+    closeSidebar();
+  }
+  if (e.metaKey && e.key === '1') { e.preventDefault(); switchView('dashboard'); }
+  if (e.metaKey && e.key === '2') { e.preventDefault(); switchView('jobs'); }
+  if (e.metaKey && e.key === '3') { e.preventDefault(); switchView('pipeline'); }
+  if (e.metaKey && e.key === '4') { e.preventDefault(); switchView('settings'); }
+});
+
+// ═══ INIT ═══
+window.addEventListener('resize', handleResponsiveLayout);
+handleResponsiveLayout();
+const setupOverlay = byId('setup-overlay');
+if (setupOverlay) {
+  setupOverlay.addEventListener('click', e => {
+    if (e.target === setupOverlay) closeSetup();
+  });
+}
+async function initApp() {
+  await loadDefaults();
+  await loadUserIdentity();
+  await loadDashboard();
+}
+
+initApp();
+</script>
+</body>
+</html>
