@@ -19,6 +19,7 @@
     "productName": "ApplyPilot",
     "mac": {
       "category": "public.app-category.productivity",
+      "icon": "icons/icon.icns",
       "target": ["dmg", "zip"]
     },
     "files": [
@@ -34,6 +35,10 @@
       {
         "from": "../ui-prototype.html",
         "to": "ui-prototype.html"
+      },
+      {
+        "from": "../requirements.txt",
+        "to": "requirements.txt"
       },
       {
         "from": "../applypilot/",

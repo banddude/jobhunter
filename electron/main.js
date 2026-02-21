@@ -1,16 +1,27 @@
 const { app, BrowserWindow, dialog } = require("electron");
-const { spawn } = require("child_process");
+const { spawn, execFileSync, execSync } = require("child_process");
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
 const http = require("http");
 const net = require("net");
 
 const PREFERRED_PORT = 8888;
 const POLL_INTERVAL_MS = 500;
 const MAX_WAIT_MS = 30000;
+const VENV_DIR = path.join(os.homedir(), ".applypilot", ".venv");
+const VENV_PYTHON = path.join(VENV_DIR, "bin", "python3");
 
 let mainWindow = null;
 let serverProcess = null;
 let serverPort = PREFERRED_PORT;
+
+function getResourcePath(...parts) {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, ...parts);
+  }
+  return path.join(__dirname, "..", ...parts);
+}
 
 function isPortFree(port) {
   return new Promise((resolve) => {
@@ -30,21 +41,85 @@ async function findAvailablePort(start) {
 }
 
 function findPython() {
-  const venvPython = path.join(__dirname, "..", "applypilot", ".venv", "bin", "python3");
+  const candidates = [
+    VENV_PYTHON,
+    getResourcePath("applypilot", ".venv", "bin", "python3"),
+    "python3",
+  ];
+  for (const p of candidates) {
+    try {
+      fs.accessSync(p, fs.constants.X_OK);
+      return p;
+    } catch {}
+  }
+  return "python3";
+}
+
+function hasDeps(pythonPath) {
   try {
-    require("fs").accessSync(venvPython, require("fs").constants.X_OK);
-    return venvPython;
+    execFileSync(pythonPath, ["-c", "import fastapi, uvicorn, yaml"], {
+      timeout: 10000,
+      stdio: "ignore",
+    });
+    return true;
   } catch {
-    return "python3";
+    return false;
   }
 }
 
-function startServer(port) {
-  const pythonPath = findPython();
-  const serverScript = path.join(__dirname, "..", "server.py");
+function ensurePythonEnv() {
+  const python = findPython();
+  if (hasDeps(python)) return python;
+
+  if (fs.existsSync(VENV_PYTHON) && hasDeps(VENV_PYTHON)) return VENV_PYTHON;
+
+  console.log("Setting up Python environment at ~/.applypilot/.venv ...");
+
+  try {
+    fs.mkdirSync(path.join(os.homedir(), ".applypilot"), { recursive: true });
+
+    execFileSync("python3", ["-m", "venv", VENV_DIR], {
+      timeout: 30000,
+      stdio: "inherit",
+    });
+
+    const reqFile = getResourcePath("requirements.txt");
+    if (fs.existsSync(reqFile)) {
+      execFileSync(VENV_PYTHON, ["-m", "pip", "install", "-r", reqFile], {
+        timeout: 120000,
+        stdio: "inherit",
+      });
+    } else {
+      execFileSync(VENV_PYTHON, ["-m", "pip", "install", "fastapi", "uvicorn[standard]", "pyyaml"], {
+        timeout: 120000,
+        stdio: "inherit",
+      });
+    }
+
+    const applypilotDir = getResourcePath("applypilot");
+    if (fs.existsSync(applypilotDir)) {
+      execFileSync(VENV_PYTHON, ["-m", "pip", "install", "-e", applypilotDir], {
+        timeout: 120000,
+        stdio: "inherit",
+      });
+    }
+
+    if (hasDeps(VENV_PYTHON)) return VENV_PYTHON;
+
+    dialog.showErrorBox("Setup Failed", "Dependencies were installed but verification failed.\n\nTry running manually in Terminal:\n  python3 -m venv ~/.applypilot/.venv\n  ~/.applypilot/.venv/bin/pip install fastapi uvicorn[standard] pyyaml");
+    return null;
+  } catch (err) {
+    dialog.showErrorBox("Setup Failed", `Could not set up Python environment.\n\n${err.message}\n\nMake sure Python 3.11+ is installed (brew install python3), then relaunch.`);
+    return null;
+  }
+}
+
+function startServer(port, pythonPath) {
+  const serverScript = getResourcePath("server.py");
+  const cwd = getResourcePath();
 
   serverProcess = spawn(pythonPath, [serverScript, "--port", String(port)], {
-    cwd: path.join(__dirname, ".."),
+    cwd: cwd,
     stdio: ["ignore", "pipe", "pipe"],
     env: { ...process.env, APPLYPILOT_PORT: String(port) },
   });
@@ -60,7 +135,7 @@ function startServer(port) {
   serverProcess.on("error", (err) => {
     dialog.showErrorBox(
       "Server Error",
-      `Failed to start the Python server.\n\n${err.message}\n\nMake sure Python 3.11+ is installed and the virtual environment is set up:\n  cd applypilot && python3 -m venv .venv && source .venv/bin/activate && pip install -e .`
+      `Failed to start the Python server.\n\n${err.message}`
     );
     app.quit();
   });
@@ -69,7 +144,7 @@ function startServer(port) {
     if (mainWindow && !app.isQuitting) {
       dialog.showErrorBox(
         "Server Stopped",
-        `The Python server exited unexpectedly (code: ${code}, signal: ${signal}).\n\nCheck the terminal output for details.`
+        `The Python server exited unexpectedly (code: ${code}, signal: ${signal}).`
       );
       app.quit();
     }
@@ -129,6 +204,12 @@ function createWindow(port) {
 }
 
 app.on("ready", async () => {
+  const pythonPath = ensurePythonEnv();
+  if (!pythonPath) {
+    app.quit();
+    return;
+  }
+
   try {
     serverPort = await findAvailablePort(PREFERRED_PORT);
   } catch (err) {
@@ -137,8 +218,8 @@ app.on("ready", async () => {
     return;
   }
 
-  console.log(`Starting server on port ${serverPort}`);
-  startServer(serverPort);
+  console.log(`Starting server on port ${serverPort} with ${pythonPath}`);
+  startServer(serverPort, pythonPath);
 
   try {
     await waitForServer(serverPort);
