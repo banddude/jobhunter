@@ -231,6 +231,196 @@ body.sidebar-open .sidebar-backdrop {
   overflow-x: hidden;
   background: var(--bg-0);
 }
+.global-status-banner {
+  margin: 14px 20px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.global-status-banner.error {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: var(--red-dim);
+  color: #fecaca;
+}
+.global-status-banner.warning {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: var(--yellow-dim);
+  color: #fde68a;
+}
+.toast-stack {
+  position: fixed;
+  top: calc(var(--header-h) + 10px);
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(360px, calc(100vw - 24px));
+  z-index: 260;
+  pointer-events: none;
+}
+.toast-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text);
+  padding: 10px 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.toast-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast-card.success {
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(16, 42, 34, 0.94);
+}
+.toast-card.error {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: rgba(47, 23, 23, 0.95);
+}
+.toast-card.warning {
+  border-color: rgba(251, 191, 36, 0.6);
+  background: rgba(52, 40, 16, 0.95);
+}
+.toast-card.info {
+  border-color: rgba(129, 140, 248, 0.5);
+  background: rgba(22, 25, 52, 0.95);
+}
+.toast-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border-radius: 50%;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.toast-card.success .toast-icon { background: var(--green-dim); color: var(--green); }
+.toast-card.error .toast-icon { background: var(--red-dim); color: var(--red); }
+.toast-card.warning .toast-icon { background: var(--yellow-dim); color: var(--yellow); }
+.toast-card.info .toast-icon { background: var(--accent-dim); color: var(--accent); }
+.toast-body {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+.toast-close {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 1px 3px;
+}
+.toast-close:hover { color: var(--text); }
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  padding: 16px;
+  text-align: center;
+}
+.empty-state-icon {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.empty-state-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.empty-state-text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+.empty-state-actions {
+  margin-top: 12px;
+  display: inline-flex;
+  gap: 8px;
+}
+.skeleton-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.skeleton-line {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--bg-4);
+}
+.skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.11), transparent);
+  animation: skeletonShimmer 1.1s linear infinite;
+}
+.dashboard-loading .stat-value,
+.dashboard-loading .stat-sub,
+.dashboard-loading .stage-count,
+.dashboard-loading .stage-label {
+  color: transparent !important;
+}
+.dashboard-loading .stat-value {
+  border-radius: 6px;
+  background: var(--bg-4);
+}
+.dashboard-loading .stat-sub {
+  border-radius: 5px;
+  background: var(--bg-4);
+}
+.dashboard-loading .pipeline-stage .stage-node {
+  border-color: var(--border);
+  background: var(--bg-3);
+  box-shadow: none;
+}
+.jobs-loading-row td {
+  padding: 10px 14px !important;
+}
+.jobs-loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.jobs-loading-placeholder .skeleton-line {
+  height: 10px;
+}
+.pipeline-loading .pipeline-card {
+  pointer-events: none;
+}
+@keyframes skeletonShimmer {
+  100% { transform: translateX(100%); }
+}
 .view {
   display: none;
   padding: 28px 32px;
@@ -844,6 +1034,142 @@ body.detail-open .detail-backdrop {
   border-radius: 2px;
   transition: width 0.5s ease;
 }
+.pipeline-live-status {
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.pipeline-live-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pipeline-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.pipeline-live-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(129, 140, 248, 0.35);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: pipelineSpin 0.9s linear infinite;
+}
+.pipeline-live-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+.pipeline-live-log {
+  margin: 0;
+  padding: 10px 12px;
+  max-height: 180px;
+  overflow: auto;
+  background: #0b1020;
+  color: #cbd5e1;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.logs-shell {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.logs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+.logs-live-state {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.logs-last-update {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+.logs-terminal {
+  min-height: 420px;
+  max-height: calc(100vh - 260px);
+  overflow: auto;
+  padding: 10px 0;
+  background: #05070d;
+  color: #d1d5db;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.logs-empty {
+  padding: 16px 12px;
+  color: #6b7280;
+}
+.log-row {
+  display: grid;
+  grid-template-columns: 96px 120px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 2px 12px;
+}
+.log-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.log-ts {
+  color: #6b7280;
+  white-space: nowrap;
+}
+.log-source {
+  color: #93c5fd;
+  white-space: nowrap;
+}
+.log-text {
+  color: #d1d5db;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.log-level-error .log-text {
+  color: #fca5a5;
+}
+.log-level-warn .log-text {
+  color: #fcd34d;
+}
+.setup-inline-error {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: var(--radius);
+  background: var(--red-dim);
+  color: #fecaca;
+  font-size: 12px;
+}
+@keyframes pipelineSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 /* ═══ SETTINGS ═══ */
 .settings-grid {
@@ -911,6 +1237,19 @@ body.detail-open .detail-backdrop {
 .form-input:focus { border-color: var(--accent); }
 .form-input::placeholder { color: var(--text-3); }
 textarea.form-input { resize: vertical; min-height: 80px; }
+.form-input.invalid {
+  border-color: rgba(248, 113, 113, 0.7);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
+}
+.field-error {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #fecaca;
+  line-height: 1.35;
+}
+.field-error strong {
+  font-weight: 700;
+}
 
 /* Tags input */
 .tags-container {
@@ -1158,6 +1497,42 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   display: inline-flex;
   align-items: center;
 }
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 280;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.58);
+  padding: 14px;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-card {
+  width: min(440px, 100%);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  padding: 16px;
+}
+.confirm-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.confirm-message {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.confirm-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
 /* ═══ SCROLLBAR ═══ */
 ::-webkit-scrollbar { width: 6px; }
@@ -1249,6 +1624,18 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   }
   body.sidebar-open .sidebar { transform: translateX(0); }
   .main { width: 100%; }
+  .global-status-banner {
+    margin: 10px 12px 0;
+    font-size: 11px;
+  }
+  .toast-stack {
+    top: calc(var(--header-h) + 6px);
+    right: 8px;
+    width: calc(100vw - 16px);
+  }
+  .toast-card {
+    padding: 9px 10px;
+  }
   .detail-panel { width: 100%; }
   .detail-header,
   .detail-body,
@@ -1344,6 +1731,29 @@ textarea.form-input { resize: vertical; min-height: 80px; }
     font-size: 10px;
   }
   .progress-bar { width: 74px; height: 3px; margin-top: 4px; }
+  .pipeline-live-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .pipeline-live-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pipeline-live-log {
+    max-height: 140px;
+    font-size: 10px;
+  }
+  .logs-terminal {
+    min-height: 260px;
+    max-height: calc(100dvh - 240px);
+    font-size: 10px;
+  }
+  .log-row {
+    grid-template-columns: 74px 86px 1fr;
+    gap: 6px;
+    padding: 2px 8px;
+  }
   #view-pipeline .pipeline-card .btn {
     font-size: 10px;
     padding: 3px 7px;
@@ -1385,6 +1795,16 @@ textarea.form-input { resize: vertical; min-height: 80px; }
     width: min(100%, 640px);
     max-height: 100vh;
     padding: 16px;
+  }
+  .confirm-card {
+    padding: 14px;
+  }
+  .confirm-actions {
+    flex-wrap: wrap;
+  }
+  .confirm-actions .btn {
+    flex: 1;
+    justify-content: center;
   }
   .setup-overlay { align-items: flex-start; }
   .drop-zone { padding: 30px 16px; }
@@ -1535,6 +1955,10 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span>Pipeline</span>
     </a>
+    <a class="nav-item" data-view="logs" onclick="switchView('logs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/><circle cx="7" cy="6" r="1"/><circle cx="7" cy="12" r="1"/><circle cx="7" cy="18" r="1"/></svg>
+      <span>Logs</span>
+    </a>
 
     <div class="sidebar-section">Configure</div>
     <a class="nav-item" data-view="settings" onclick="switchView('settings')">
@@ -1555,6 +1979,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 
   <!-- MAIN CONTENT -->
   <main class="main">
+    <div id="global-status-banner" class="global-status-banner" style="display:none"></div>
 
     <!-- ═══ DASHBOARD VIEW ═══ -->
     <section class="view active" id="view-dashboard">
@@ -1625,6 +2050,14 @@ textarea.form-input { resize: vertical; min-height: 80px; }
           </div>
         </div>
       </div>
+
+      <!-- Generated Documents -->
+      <div class="card" id="documents-card" style="display:none;margin-top:16px">
+        <div class="card-header">
+          <span class="card-title">Generated Documents</span>
+        </div>
+        <div id="documents-list" style="display:flex;flex-direction:column;gap:0"></div>
+      </div>
     </section>
 
     <!-- ═══ JOBS VIEW ═══ -->
@@ -1685,7 +2118,29 @@ textarea.form-input { resize: vertical; min-height: 80px; }
         </div>
       </div>
 
+      <div id="pipeline-live-status" class="pipeline-live-status" style="display:none">
+        <div class="pipeline-live-head">
+          <div class="pipeline-live-indicator">
+            <span class="pipeline-live-spinner" aria-hidden="true"></span>
+            <span id="pipeline-live-state">Running</span>
+          </div>
+          <div class="pipeline-live-meta">
+            <span id="pipeline-live-stage">Stages: --</span>
+            <span id="pipeline-live-elapsed">Elapsed: 00:00</span>
+          </div>
+        </div>
+        <pre id="pipeline-live-log" class="pipeline-live-log">Waiting for pipeline output...</pre>
+      </div>
+
       <div id="pipeline-card-list"></div>
+
+      <!-- Generated Documents (pipeline) -->
+      <div class="card" id="pipeline-documents-card" style="display:none;margin-top:16px">
+        <div class="card-header">
+          <span class="card-title">Generated Documents</span>
+        </div>
+        <div id="pipeline-documents-list" style="display:flex;flex-direction:column;gap:0"></div>
+      </div>
 
       <div class="card pipeline-options" style="margin-top:20px;padding:16px">
         <div class="pipeline-options-row" style="display:flex;align-items:center;gap:12px">
@@ -1699,6 +2154,29 @@ textarea.form-input { resize: vertical; min-height: 80px; }
             <label style="font-size:12px;color:var(--text-2)">Workers:</label>
             <input id="pipeline-workers" type="number" value="1" min="1" class="form-input" style="width:60px;padding:5px 8px">
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ LOGS VIEW ═══ -->
+    <section class="view" id="view-logs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Logs</div>
+          <div class="page-subtitle">Live pipeline output and backend log files</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="refreshLogsNow()">Refresh</button>
+          <button class="btn" onclick="clearLogsViewer()">Clear</button>
+        </div>
+      </div>
+      <div class="logs-shell">
+        <div class="logs-toolbar">
+          <span id="logs-live-state" class="logs-live-state">Waiting for logs...</span>
+          <span id="logs-last-update" class="logs-last-update">Last update: --</span>
+        </div>
+        <div id="logs-terminal" class="logs-terminal">
+          <div class="logs-empty">No logs yet.</div>
         </div>
       </div>
     </section>
@@ -1908,8 +2386,24 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       <div class="detail-desc" id="detail-desc"></div>
     </div>
     <div class="detail-section" id="detail-resume-section" style="display:none">
-      <div class="detail-section-title">Tailored Resume Preview</div>
+      <div class="detail-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        Tailored Resume Preview
+        <div id="detail-resume-pdf-btns" style="display:none;gap:6px">
+          <button class="btn" type="button" id="detail-resume-pdf-view" style="font-size:11px;padding:4px 10px" title="Open PDF in new tab">View PDF</button>
+          <button class="btn" type="button" id="detail-resume-pdf-dl" style="font-size:11px;padding:4px 10px" title="Download PDF">Download PDF</button>
+        </div>
+      </div>
       <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:12px;color:var(--text-2);line-height:1.7;font-family:var(--mono)" id="detail-resume"></div>
+    </div>
+    <div class="detail-section" id="detail-cover-letter-section" style="display:none">
+      <div class="detail-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        Cover Letter
+        <div id="detail-cl-pdf-btns" style="display:none;gap:6px">
+          <button class="btn" type="button" id="detail-cl-pdf-view" style="font-size:11px;padding:4px 10px" title="Open PDF in new tab">View PDF</button>
+          <button class="btn" type="button" id="detail-cl-pdf-dl" style="font-size:11px;padding:4px 10px" title="Download PDF">Download PDF</button>
+        </div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:12px;color:var(--text-2);line-height:1.7;font-family:var(--mono)" id="detail-cover-letter"></div>
     </div>
   </div>
   <div class="detail-actions">
@@ -1927,13 +2421,19 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       <div class="setup-step-dot" id="dot-2"></div>
       <div class="setup-step-dot" id="dot-3"></div>
     </div>
+    <div id="setup-inline-error" class="setup-inline-error" style="display:none"></div>
 
-    <!-- Step 0: System Check -->
+    <!-- Step 1: Profile Basics -->
     <div class="setup-step" id="step-0">
-      <div class="setup-step-title">System Check</div>
-      <div class="setup-step-desc">Checking that your system has everything needed to run ApplyPilot.</div>
-      <div id="setup-system-checks">
-        <div style="font-size:12px;color:var(--text-3)">Loading system checks...</div>
+      <div class="setup-step-title">Step 1, Profile Basics</div>
+      <div class="setup-step-desc">Tell ApplyPilot who you are and where you want to work.</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name</label><input id="setup-profile-name" class="form-input" placeholder="John Doe"></div>
+        <div class="form-group"><label class="form-label">Email</label><input id="setup-profile-email" class="form-input" placeholder="you@email.com"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred Location</label>
+        <input id="setup-profile-location" class="form-input" placeholder="Los Angeles, CA">
       </div>
       <div class="setup-actions">
         <button class="btn btn-ghost" onclick="closeSetup()">Cancel</button>
@@ -1941,19 +2441,20 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- Step 1: Resume -->
+    <!-- Step 2: Resume -->
     <div class="setup-step" id="step-1" style="display:none">
-      <div class="setup-step-title">Upload Your Resume</div>
-      <div class="setup-step-desc">Drop a .txt resume. This becomes your base resume that gets tailored per job.</div>
-      <input id="setup-resume-file" type="file" accept=".txt,text/plain" hidden>
+      <div class="setup-step-title">Step 2, Resume</div>
+      <div class="setup-step-desc">Upload your resume file, or paste your resume directly.</div>
+      <input id="setup-resume-file" type="file" accept=".pdf,.docx,.rtf,.txt,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/rtf,text/rtf" hidden>
       <div class="drop-zone" id="setup-resume-drop-zone">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5" style="margin-bottom:12px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <div class="drop-zone-text">Drop your resume here or click to browse</div>
-        <div class="drop-zone-sub">.txt, max 5MB</div>
+        <div class="drop-zone-text">Drop your resume file here or click to browse</div>
+        <div class="drop-zone-sub">Accepts PDF, DOCX, RTF, or TXT</div>
+        <div class="drop-zone-sub">You can also paste below</div>
       </div>
       <div class="form-group" style="margin-top:12px">
         <label class="form-label">Resume Text</label>
-        <textarea id="setup-resume-text" class="form-input" rows="8" placeholder="Paste your resume text here"></textarea>
+        <textarea id="setup-resume-text" class="form-input" rows="10" placeholder="Paste your resume text here"></textarea>
       </div>
       <div class="setup-actions">
         <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
@@ -1961,51 +2462,63 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- Step 2: Profile -->
+    <!-- Step 3: Search Preferences -->
     <div class="setup-step" id="step-2" style="display:none">
-      <div class="setup-step-title">Your Profile</div>
-      <div class="setup-step-desc">Basic info used to fill out job applications.</div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Full Name</label><input id="setup-full-name" class="form-input" placeholder="John Doe"></div>
-        <div class="form-group"><label class="form-label">Email</label><input id="setup-email" class="form-input" placeholder="you@email.com"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Phone</label><input id="setup-phone" class="form-input" placeholder="555-123-4567"></div>
-        <div class="form-group"><label class="form-label">City, State</label><input id="setup-city-state" class="form-input" placeholder="City, State"></div>
-      </div>
-      <div class="form-group"><label class="form-label">What kind of work are you looking for?</label><input id="setup-target-role" class="form-input" placeholder="Target role"></div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Salary Min</label><input id="setup-salary-min" class="form-input" type="number" placeholder="50000"></div>
-        <div class="form-group"><label class="form-label">Salary Max</label><input id="setup-salary-max" class="form-input" type="number" placeholder="100000"></div>
-      </div>
-      <div class="setup-actions">
-        <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
-        <button class="btn btn-primary" onclick="nextSetupStep()">Continue</button>
-      </div>
-    </div>
-
-    <!-- Step 3: Search Config -->
-    <div class="setup-step" id="step-3" style="display:none">
-      <div class="setup-step-title">Search Configuration</div>
-      <div class="setup-step-desc">What to search for and where. You can always adjust these later.</div>
+      <div class="setup-step-title">Step 3, Search Preferences</div>
+      <div class="setup-step-desc">Choose job titles, work mode, salary target, and which sites to search.</div>
       <div class="form-group">
-        <label class="form-label">Search Queries (one per line)</label>
-        <textarea id="setup-search-queries" class="form-input" rows="5" placeholder="Enter one search query per line"></textarea>
+        <label class="form-label">Job Titles, one per line</label>
+        <textarea id="setup-job-titles" class="form-input" rows="5" placeholder="Operations Coordinator&#10;Administrative Assistant&#10;Project Coordinator"></textarea>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Location</label><input id="setup-location" class="form-input" placeholder="City, State"></div>
-        <div class="form-group"><label class="form-label">Include Remote Jobs</label><select id="setup-include-remote" class="form-input"><option selected>Yes</option><option>No</option></select></div>
+        <div class="form-group">
+          <label class="form-label">Work Mode</label>
+          <select id="setup-work-mode" class="form-input">
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">Onsite</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Salary Min</label><input id="setup-salary-min" class="form-input" type="number" min="0" placeholder="55000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Salary Max</label><input id="setup-salary-max" class="form-input" type="number" min="0" placeholder="90000"></div>
+        <div class="form-group"><label class="form-label">Search Country</label><input id="setup-search-country" class="form-input" placeholder="USA"></div>
       </div>
       <div class="form-group">
-        <label class="form-label">Job Boards</label>
+        <label class="form-label">Sites To Search</label>
         <div id="setup-board-pills" class="skills-boundary-list">
           <div style="font-size:12px;color:var(--text-3)">Loading boards...</div>
         </div>
       </div>
       <div class="setup-actions">
         <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
-        <button class="btn btn-primary" onclick="finishSetup()">Finish Setup</button>
+        <button class="btn btn-primary" onclick="nextSetupStep()">Continue</button>
       </div>
+    </div>
+
+    <!-- Step 4: Review -->
+    <div class="setup-step" id="step-3" style="display:none">
+      <div class="setup-step-title">Step 4, Review and Save</div>
+      <div class="setup-step-desc">Confirm your setup details, then save configuration.</div>
+      <div id="setup-review-summary" class="capsolver-help">Loading review summary...</div>
+      <div class="setup-actions">
+        <button class="btn btn-ghost" onclick="prevSetupStep()">Back</button>
+        <button class="btn btn-primary" onclick="finishSetup()">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+<div id="confirm-overlay" class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+  <div class="confirm-card">
+    <div id="confirm-title" class="confirm-title">Confirm action</div>
+    <div id="confirm-message" class="confirm-message">Are you sure?</div>
+    <div class="confirm-actions">
+      <button id="confirm-cancel-btn" class="btn" type="button">Cancel</button>
+      <button id="confirm-ok-btn" class="btn btn-primary" type="button">Confirm</button>
     </div>
   </div>
 </div>
@@ -2027,6 +2540,26 @@ let _appDefaults = {
 };
 let _appDefaultsLoaded = false;
 const MOBILE_BREAKPOINT = 980;
+const PIPELINE_STATUS_POLL_MS = 4000;
+const PIPELINE_LOG_MAX_LINES = 220;
+let _pipelinePollTimer = null;
+let _pipelineLastOutputLength = 0;
+let _pipelineLastStatsRefreshAt = 0;
+let _serverUnreachable = false;
+const LOGS_POLL_MS = 2500;
+const LOGS_ROW_LIMIT = 3000;
+let _logsPollTimer = null;
+let _logsActive = false;
+let _logsRows = [];
+let _logsRowIds = new Set();
+let _logsPipelineSince = 0;
+let _logsPipelineRunKey = '';
+let _logsFileFloorByPath = {};
+let _logsLastSnapshot = null;
+let _dashboardLoading = false;
+let _jobsLoading = false;
+let _pipelineUiLoading = false;
+const SETUP_FALLBACK_BOARDS = ['indeed', 'linkedin', 'glassdoor', 'zip_recruiter'];
 
 function isMobileLayout() {
   return window.matchMedia('(max-width: ' + MOBILE_BREAKPOINT + 'px)').matches;
@@ -2058,20 +2591,82 @@ function windowControlUnavailable() {
 }
 
 // ═══ TOAST NOTIFICATIONS ═══
+let _toastSeq = 0;
+const MAX_TOASTS = 5;
 function toast(msg, type) {
-  type = type || 'info';
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;top:52px;right:20px;z-index:999;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;' +
-    'font-family:var(--font);color:#fff;opacity:0;transform:translateY(-8px);transition:all 0.3s ease;max-width:360px;' +
-    'box-shadow:0 8px 24px rgba(0,0,0,0.4);backdrop-filter:blur(8px);';
-  if (type === 'success') t.style.background = 'rgba(52,211,153,0.9)';
-  else if (type === 'error') t.style.background = 'rgba(248,113,113,0.9)';
-  else if (type === 'warning') t.style.background = 'rgba(251,191,36,0.9)';
-  else t.style.background = 'rgba(129,140,248,0.9)';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
-  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(-8px)'; setTimeout(() => t.remove(), 300); }, 3500);
+  const tone = (type || 'info').toLowerCase();
+  const stack = byId('toast-stack');
+  if (!stack) return;
+  const toastId = 'toast-' + (++_toastSeq);
+  const icon = tone === 'success' ? 'OK' : (tone === 'error' ? '!' : (tone === 'warning' ? '!' : 'i'));
+  const card = document.createElement('div');
+  card.className = 'toast-card ' + tone;
+  card.dataset.toastId = toastId;
+  card.innerHTML =
+    '<span class="toast-icon" aria-hidden="true">' + esc(icon) + '</span>' +
+    '<div class="toast-body">' + esc(String(msg || '')) + '</div>' +
+    '<button class="toast-close" type="button" aria-label="Dismiss">x</button>';
+  stack.appendChild(card);
+  while (stack.children.length > MAX_TOASTS) {
+    stack.removeChild(stack.firstElementChild);
+  }
+  const dismiss = () => {
+    card.classList.remove('show');
+    setTimeout(() => {
+      if (card.parentNode) card.parentNode.removeChild(card);
+    }, 180);
+  };
+  card.querySelector('.toast-close')?.addEventListener('click', dismiss);
+  requestAnimationFrame(() => card.classList.add('show'));
+  setTimeout(dismiss, tone === 'error' ? 6000 : 4200);
+}
+
+// ═══ CONFIRM DIALOG ═══
+let _confirmResolve = null;
+let _confirmActive = false;
+
+function closeConfirmDialog(result) {
+  const overlay = byId('confirm-overlay');
+  if (overlay) overlay.classList.remove('open');
+  if (_confirmResolve) {
+    _confirmResolve(Boolean(result));
+    _confirmResolve = null;
+  }
+  _confirmActive = false;
+}
+
+function confirmAction(options) {
+  const opts = options || {};
+  const overlay = byId('confirm-overlay');
+  const titleEl = byId('confirm-title');
+  const msgEl = byId('confirm-message');
+  const okBtn = byId('confirm-ok-btn');
+  const cancelBtn = byId('confirm-cancel-btn');
+  if (!overlay || !titleEl || !msgEl || !okBtn || !cancelBtn) {
+    return Promise.resolve(window.confirm(String(opts.message || 'Are you sure?')));
+  }
+  titleEl.textContent = String(opts.title || 'Confirm action');
+  msgEl.textContent = String(opts.message || 'Are you sure?');
+  okBtn.textContent = String(opts.confirmLabel || 'Confirm');
+  if (opts.tone === 'danger') {
+    okBtn.style.background = 'var(--red)';
+    okBtn.style.borderColor = 'var(--red)';
+    okBtn.style.color = '#fff';
+  } else {
+    okBtn.style.background = '';
+    okBtn.style.borderColor = '';
+    okBtn.style.color = '';
+  }
+  overlay.classList.add('open');
+  _confirmActive = true;
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    cancelBtn.onclick = () => closeConfirmDialog(false);
+    okBtn.onclick = () => closeConfirmDialog(true);
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeConfirmDialog(false);
+    };
+  });
 }
 
 // ═══ API HELPERS ═══
@@ -2083,6 +2678,38 @@ function notifyApiError(path, message) {
   toast(message, 'error');
 }
 
+function setGlobalStatusBanner(message, type) {
+  const el = byId('global-status-banner');
+  if (!el) return;
+  const text = String(message || '').trim();
+  if (!text) {
+    el.style.display = 'none';
+    el.textContent = '';
+    el.className = 'global-status-banner';
+    return;
+  }
+  el.textContent = text;
+  el.className = 'global-status-banner ' + (type || 'warning');
+  el.style.display = 'block';
+}
+
+function clearGlobalStatusBanner() {
+  setGlobalStatusBanner('', '');
+}
+
+function setSetupInlineError(message) {
+  const el = byId('setup-inline-error');
+  if (!el) return;
+  const text = String(message || '').trim();
+  if (!text) {
+    el.style.display = 'none';
+    el.textContent = '';
+    return;
+  }
+  el.textContent = text;
+  el.style.display = 'block';
+}
+
 function asCount(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -2091,6 +2718,131 @@ function asCount(value) {
 function asIntOrNull(value) {
   const n = parseInt(value, 10);
   return Number.isFinite(n) ? n : null;
+}
+
+function emptyStateHtml(title, message, actionLabel, actionJs) {
+  const safeTitle = esc(title || 'Nothing yet');
+  const safeMessage = esc(message || '');
+  const action = actionLabel && actionJs
+    ? ('<div class="empty-state-actions"><button class="btn btn-sm" type="button" onclick="' + escAttr(actionJs) + '">' + esc(actionLabel) + '</button></div>')
+    : '';
+  return '<div class="empty-state">' +
+    '<div class="empty-state-icon">i</div>' +
+    '<div class="empty-state-title">' + safeTitle + '</div>' +
+    '<div class="empty-state-text">' + safeMessage + '</div>' +
+    action +
+    '</div>';
+}
+
+function clearFieldError(id) {
+  const el = byId(id);
+  if (!el) return;
+  el.classList.remove('invalid');
+  const parent = el.parentElement;
+  if (!parent) return;
+  const node = parent.querySelector('.field-error[data-field-error-for="' + id + '"]');
+  if (node) node.remove();
+}
+
+function setFieldError(id, message) {
+  const el = byId(id);
+  if (!el) return;
+  const text = String(message || '').trim();
+  const parent = el.parentElement;
+  if (!parent) return;
+  el.classList.toggle('invalid', Boolean(text));
+  let node = parent.querySelector('.field-error[data-field-error-for="' + id + '"]');
+  if (!text) {
+    if (node) node.remove();
+    return;
+  }
+  if (!node) {
+    node = document.createElement('div');
+    node.className = 'field-error';
+    node.dataset.fieldErrorFor = id;
+    parent.appendChild(node);
+  }
+  node.textContent = text;
+}
+
+function clearFieldErrors(scopeSelector) {
+  const root = scopeSelector ? document.querySelector(scopeSelector) : document;
+  if (!root) return;
+  root.querySelectorAll('.form-input.invalid').forEach(el => el.classList.remove('invalid'));
+  root.querySelectorAll('.field-error').forEach(el => el.remove());
+}
+
+function wireInlineValidation() {
+  document.querySelectorAll('.form-input').forEach(input => {
+    const id = input.id;
+    if (!id) return;
+    if (input.dataset.validationWired === '1') return;
+    input.dataset.validationWired = '1';
+    input.addEventListener('input', () => clearFieldError(id));
+    input.addEventListener('change', () => clearFieldError(id));
+  });
+}
+
+function setDashboardLoadingState(loading) {
+  _dashboardLoading = Boolean(loading);
+  const view = byId('view-dashboard');
+  if (!view) return;
+  view.classList.toggle('dashboard-loading', _dashboardLoading);
+  if (!_dashboardLoading) return;
+  const pageSub = view.querySelector('.page-subtitle');
+  if (pageSub) pageSub.textContent = 'Loading dashboard...';
+  const top = byId('top-matches-list');
+  if (top) {
+    top.innerHTML = '<div class="skeleton-stack">' +
+      '<div class="skeleton-line" style="height:12px;width:68%"></div>' +
+      '<div class="skeleton-line" style="height:10px;width:92%"></div>' +
+      '<div class="skeleton-line" style="height:10px;width:83%"></div>' +
+      '<div class="skeleton-line" style="height:10px;width:76%"></div>' +
+      '</div>';
+  }
+  const feed = byId('activity-feed');
+  if (feed) {
+    feed.innerHTML = '<div class="skeleton-stack">' +
+      '<div class="skeleton-line" style="height:10px;width:95%"></div>' +
+      '<div class="skeleton-line" style="height:10px;width:82%"></div>' +
+      '<div class="skeleton-line" style="height:10px;width:88%"></div>' +
+      '<div class="skeleton-line" style="height:10px;width:70%"></div>' +
+      '</div>';
+  }
+}
+
+function setJobsLoadingState(loading) {
+  _jobsLoading = Boolean(loading);
+  const tbody = byId('jobs-tbody');
+  if (!tbody) return;
+  if (!_jobsLoading) return;
+  tbody.innerHTML = [1, 2, 3, 4, 5].map(() => (
+    '<tr class="jobs-loading-row">' +
+      '<td colspan="7">' +
+        '<div class="jobs-loading-placeholder">' +
+          '<div class="skeleton-line" style="width:52%"></div>' +
+          '<div class="skeleton-line" style="width:88%"></div>' +
+        '</div>' +
+      '</td>' +
+    '</tr>'
+  )).join('');
+}
+
+function setPipelineLoadingState(loading) {
+  _pipelineUiLoading = Boolean(loading);
+  const pipelineView = byId('view-pipeline');
+  if (pipelineView) pipelineView.classList.toggle('pipeline-loading', _pipelineUiLoading);
+  if (!_pipelineUiLoading) return;
+  const list = byId('pipeline-card-list');
+  if (list) {
+    list.innerHTML = [1, 2, 3].map(() => (
+      '<div class="pipeline-card">' +
+        '<div class="pipeline-card-icon" style="background:var(--bg-3)"></div>' +
+        '<div class="pipeline-card-info"><div class="skeleton-line" style="height:12px;width:50%"></div><div class="skeleton-line" style="height:10px;width:78%;margin-top:8px"></div></div>' +
+        '<div class="pipeline-card-stats"><div class="skeleton-line" style="height:11px;width:64px;margin-left:auto"></div><div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--bg-4)"></div></div></div>' +
+      '</div>'
+    )).join('');
+  }
 }
 
 function getDefaultMinScore() {
@@ -2198,6 +2950,7 @@ function stageTitle(stage) {
   const key = String(stage || '').toLowerCase();
   if (key === 'pdf') return 'PDF';
   if (key === 'cover_letter') return 'Cover Letter';
+  if (key === 'cover') return 'Cover Letter';
   if (key === 'tailor') return 'Tailor Resume';
   if (key === 'apply') return 'Auto-Apply';
   return key.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
@@ -2311,9 +3064,15 @@ function getPollIntervalMs() {
 function renderDashboardPipelineFlow() {
   const flow = byId('dashboard-pipeline-flow');
   if (!flow) return;
+  if (!_appDefaultsLoaded) {
+    flow.innerHTML = '<div class="skeleton-stack" style="width:100%">' +
+      '<div class="skeleton-line" style="height:70px;width:100%"></div>' +
+      '</div>';
+    return;
+  }
   const stages = getPipelineStages();
   if (!stages.length) {
-    flow.innerHTML = '<div style="font-size:12px;color:var(--text-3);padding:8px 0">No pipeline stages configured.</div>';
+    flow.innerHTML = emptyStateHtml('Pipeline Not Configured', 'No pipeline stages are available yet. Check defaults and setup.');
     return;
   }
   const parts = [];
@@ -2335,9 +3094,16 @@ function renderDashboardPipelineFlow() {
 function renderPipelineCards() {
   const list = byId('pipeline-card-list');
   if (!list) return;
+  if (!_appDefaultsLoaded) {
+    setPipelineLoadingState(true);
+    return;
+  }
+  setPipelineLoadingState(false);
   const stages = getPipelineStages();
   if (!stages.length) {
-    list.innerHTML = '<div class="card" style="padding:14px;font-size:12px;color:var(--text-3)">No pipeline stages configured.</div>';
+    list.innerHTML = '<div class="card" style="padding:14px">' +
+      emptyStateHtml('Pipeline Stages Missing', 'No runnable stages were returned by defaults. Reload settings or server defaults.') +
+      '</div>';
     return;
   }
   list.innerHTML = stages.map((stage, idx) => {
@@ -2446,16 +3212,59 @@ function getPipelineDryRunInput() {
   return Boolean(byId('pipeline-dry-run')?.checked);
 }
 
+function validatePipelineInputs() {
+  clearFieldError('pipeline-min-score');
+  clearFieldError('pipeline-workers');
+  const minRaw = String(byId('pipeline-min-score')?.value || '').trim();
+  const workersRaw = String(byId('pipeline-workers')?.value || '').trim();
+  const minScore = Number(minRaw);
+  const workers = Number(workersRaw);
+  let ok = true;
+  const minBound = getPipelineMinBound();
+  const maxBound = getPipelineMaxBound();
+
+  if (!minRaw || !Number.isFinite(minScore)) {
+    setFieldError('pipeline-min-score', 'Min score is required.');
+    ok = false;
+  } else if (!Number.isInteger(minScore)) {
+    setFieldError('pipeline-min-score', 'Min score must be a whole number.');
+    ok = false;
+  } else if (Number.isFinite(minBound) && minScore < minBound) {
+    setFieldError('pipeline-min-score', 'Min score must be at least ' + minBound + '.');
+    ok = false;
+  } else if (Number.isFinite(maxBound) && minScore > maxBound) {
+    setFieldError('pipeline-min-score', 'Min score must be at most ' + maxBound + '.');
+    ok = false;
+  }
+
+  if (!workersRaw || !Number.isFinite(workers)) {
+    setFieldError('pipeline-workers', 'Workers is required.');
+    ok = false;
+  } else if (!Number.isInteger(workers)) {
+    setFieldError('pipeline-workers', 'Workers must be a whole number.');
+    ok = false;
+  } else if (workers < 1) {
+    setFieldError('pipeline-workers', 'Workers must be at least 1.');
+    ok = false;
+  } else if (workers > 64) {
+    setFieldError('pipeline-workers', 'Workers cannot exceed 64.');
+    ok = false;
+  }
+  return ok;
+}
+
 function setTopMatchesMessage(msg) {
   const container = byId('top-matches-list');
   if (!container) return;
-  container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">' + esc(msg) + '</div>';
+  container.innerHTML = emptyStateHtml('Top Matches', String(msg || 'No top matches yet.'), 'Run Pipeline', "switchView('pipeline')");
 }
 
 function setJobsTableMessage(msg) {
   const tbody = byId('jobs-tbody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">' + esc(msg) + '</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" style="padding:14px">' +
+    emptyStateHtml('No Jobs Yet', String(msg || 'No jobs available right now.'), 'Run Pipeline', "switchView('pipeline')") +
+    '</td></tr>';
 }
 
 function updateUserIdentity(profile) {
@@ -2524,11 +3333,21 @@ function addSkillsBoundaryRow() {
 
 function removeSkillsBoundaryRow(btn) {
   const row = btn.closest('[data-skills-row]');
-  if (row) row.remove();
-  const container = byId('settings-skills-boundary');
-  if (container && !container.querySelector('[data-skills-row]')) {
-    container.innerHTML = '<div style="font-size:12px;color:var(--text-3)">No skills configured yet. Add a category below.</div>';
-  }
+  if (!row) return;
+  confirmAction({
+    title: 'Remove Skill Category',
+    message: 'Delete this skills category and all values in it?',
+    confirmLabel: 'Delete',
+    tone: 'danger'
+  }).then(ok => {
+    if (!ok) return;
+    row.remove();
+    toast('Skill category removed', 'warning');
+    const container = byId('settings-skills-boundary');
+    if (container && !container.querySelector('[data-skills-row]')) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--text-3)">No skills configured yet. Add a category below.</div>';
+    }
+  });
 }
 
 function readSkillsBoundaryFromSettings() {
@@ -2562,6 +3381,11 @@ async function api(path, opts, meta) {
   const settings = meta || {};
   try {
     const res = await fetch(API + path, opts);
+    if (_serverUnreachable) {
+      _serverUnreachable = false;
+      clearGlobalStatusBanner();
+      toast('Reconnected to ApplyPilot server.', 'success');
+    }
     const contentType = (res.headers.get('content-type') || '').toLowerCase();
     let payload = null;
     if (contentType.includes('application/json')) {
@@ -2574,6 +3398,9 @@ async function api(path, opts, meta) {
       const detail = payload && typeof payload === 'object' ? (payload.detail || payload.error) : '';
       const message = detail || ('Request failed (' + res.status + ') for ' + path);
       console.error('API error response:', path, res.status, payload);
+      if (res.status >= 500) {
+        setGlobalStatusBanner('ApplyPilot server error while calling ' + path + '. ' + message, 'error');
+      }
       if (!settings.silent) notifyApiError(path, message);
       return null;
     }
@@ -2585,7 +3412,10 @@ async function api(path, opts, meta) {
     return payload;
   } catch (e) {
     console.error('API error:', path, e);
-    if (!settings.silent) notifyApiError(path, 'Network error while loading data');
+    _serverUnreachable = true;
+    const message = 'Cannot reach ApplyPilot server at ' + API + '. Check that server.py is running on localhost:8888.';
+    setGlobalStatusBanner(message, 'error');
+    if (!settings.silent) notifyApiError(path, message);
     return null;
   }
 }
@@ -2630,10 +3460,8 @@ async function loadDefaults() {
 }
 
 // ═══ DASHBOARD ═══
-async function loadDashboard() {
-  const stats = await api('/stats');
-  if (!stats) return;
-  renderPipelineUi();
+function applyDashboardStats(stats, options) {
+  const opts = options || {};
   _cachedStats = stats;
   const total = asCount(stats.total);
   const enriched = asCount(stats.enriched);
@@ -2642,30 +3470,29 @@ async function loadDashboard() {
   const tailored = asCount(stats.tailored);
   const coverLetters = asCount(stats.cover_letters);
   const applied = asCount(stats.applied);
-  // Update stat cards
+
   const cards = document.querySelectorAll('.stat-value');
   if (cards[0]) cards[0].textContent = total;
   if (cards[1]) cards[1].textContent = scored7plus;
   if (cards[2]) cards[2].textContent = tailored;
   if (cards[3]) cards[3].textContent = applied;
-  // Update subtitles
+
   const sub = document.querySelectorAll('.stat-sub');
   if (sub[0]) sub[0].textContent = enriched + ' enriched';
   if (sub[1]) sub[1].textContent = total > 0 ? Math.round(scored7plus / total * 100) + '% match rate' : 'No scores yet';
   if (sub[2]) sub[2].textContent = tailored + ' tailored, ' + coverLetters + ' letters';
   if (sub[3]) sub[3].textContent = applied > 0 ? applied + ' submitted' : 'None yet';
-  // Update nav badge
+
   const badge = byId('nav-job-count');
   if (badge) badge.textContent = total;
-  // Update page subtitle
+
   const pageSub = document.querySelector('#view-dashboard .page-subtitle');
   if (pageSub && stats.last_discovered) {
-    const ago = timeAgo(stats.last_discovered);
-    pageSub.textContent = 'Last discovery ' + ago;
+    pageSub.textContent = 'Last discovery ' + timeAgo(stats.last_discovered);
   } else if (pageSub) {
     pageSub.textContent = 'No discoveries yet';
   }
-  // Update dashboard pipeline flow counts and statuses
+
   const stageIds = getPipelineStages();
   const stageCounts = stageIds.map(stage => stageMetric(stats, stage));
   stageIds.forEach((stage, idx) => {
@@ -2684,17 +3511,45 @@ async function loadDashboard() {
       if (connector) connector.className = 'pipeline-connector' + (Number.isFinite(nextCount) && nextCount > 0 ? ' done' : '');
     }
   });
-  // Update jobs subtitle
+
   const jobsSub = document.querySelector('#view-jobs .page-subtitle');
   if (jobsSub) {
     const suffix = minScoreLabelSuffix();
     jobsSub.textContent = total + ' discovered, ' + scored7plus + ' scored ' + (suffix || 'high');
   }
-  // Load top matches and activity
-  loadTopMatches({ total, enriched, scored, scored_7plus: scored7plus, tailored, cover_letters: coverLetters, applied, last_discovered: stats.last_discovered, sources: stats.sources || {} });
-  updateActivityFeed(stats);
-  // Update pipeline view stats
-  updatePipelineView({ total, enriched, scored, scored_7plus: scored7plus, tailored, cover_letters: coverLetters, applied });
+
+  const compactStats = {
+    total,
+    enriched,
+    scored,
+    scored_7plus: scored7plus,
+    tailored,
+    cover_letters: coverLetters,
+    applied,
+    last_discovered: stats.last_discovered,
+    sources: stats.sources || {}
+  };
+  if (!opts.lightweight) {
+    loadTopMatches(compactStats);
+    updateActivityFeed(compactStats);
+    loadDocuments();
+  }
+  updatePipelineView(compactStats);
+}
+
+async function loadDashboard(options) {
+  const opts = options || {};
+  const shouldShowLoading = !opts.stats && !_cachedStats;
+  if (shouldShowLoading) setDashboardLoadingState(true);
+  try {
+    const stats = opts.stats || await api('/stats', null, {silent: Boolean(opts.silent)});
+    if (!stats) return false;
+    if (!opts.skipRenderPipelineUi) renderPipelineUi();
+    applyDashboardStats(stats, opts);
+    return true;
+  } finally {
+    if (shouldShowLoading) setDashboardLoadingState(false);
+  }
 }
 
 async function loadTopMatches(stats) {
@@ -2743,6 +3598,37 @@ async function loadTopMatches(stats) {
   } else {
     setTopMatchesMessage('No jobs discovered yet. Run the pipeline to get started.');
   }
+}
+
+async function loadDocuments() {
+  const data = await api('/documents', null, {silent: true});
+  if (!data || !Array.isArray(data.documents) || !data.documents.length) {
+    const dc = byId('documents-card');
+    if (dc) dc.style.display = 'none';
+    const pc = byId('pipeline-documents-card');
+    if (pc) pc.style.display = 'none';
+    return;
+  }
+  const html = data.documents.map(doc => {
+    const pdfItems = doc.pdfs.map(p => {
+      const pdfUrl = '/api/files/pdf?path=' + encodeURIComponent(p.path);
+      const label = p.type === 'resume' ? 'Resume' : 'Cover Letter';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
+        '<span style="font-size:12px;color:var(--text-2);min-width:90px">' + label + '</span>' +
+        '<button class="btn btn-sm" onclick="window.open(\'' + pdfUrl + '\',\'_blank\')" style="font-size:11px;padding:3px 8px">View</button>' +
+        '<button class="btn btn-sm" onclick="(function(){var a=document.createElement(\'a\');a.href=\'' + pdfUrl + '\';a.download=\'\';document.body.appendChild(a);a.click();a.remove()})()" style="font-size:11px;padding:3px 8px">Download</button>' +
+        '</div>';
+    }).join('');
+    return '<div class="activity-item" style="flex-direction:column;align-items:stretch;gap:4px;padding:12px 16px">' +
+      '<div style="font-weight:600;font-size:13px">' + mdInline(doc.title) + '</div>' +
+      '<div style="font-size:12px;color:var(--text-3)">' + mdInline(doc.company) + '</div>' +
+      pdfItems +
+      '</div>';
+  }).join('');
+  const dc = byId('documents-card');
+  if (dc) { dc.style.display = 'block'; byId('documents-list').innerHTML = html; }
+  const pc = byId('pipeline-documents-card');
+  if (pc) { pc.style.display = 'block'; byId('pipeline-documents-list').innerHTML = html; }
 }
 
 function updateActivityFeed(stats) {
@@ -2920,6 +3806,190 @@ function setMarkdownBlock(el, value, fallback) {
   el.innerHTML = '<div class="md-block">' + mdBlock(text || fb) + '</div>';
 }
 
+function clearLogsPollTimer() {
+  if (_logsPollTimer) {
+    clearTimeout(_logsPollTimer);
+    _logsPollTimer = null;
+  }
+}
+
+function logLevelFromText(text) {
+  const value = String(text || '').toLowerCase();
+  if (!value) return 'info';
+  if (value.includes('error') || value.includes('exception') || value.includes('traceback') || value.includes('failed')) return 'error';
+  if (value.includes('warn')) return 'warn';
+  return 'info';
+}
+
+function formatLogTime(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '--:--:--';
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return '--:--:--';
+  return date.toLocaleTimeString([], {hour12: false});
+}
+
+function appendLogs(rows) {
+  const incoming = Array.isArray(rows) ? rows : [];
+  incoming.forEach(row => {
+    if (!row || !row.id) return;
+    if (_logsRowIds.has(row.id)) return;
+    _logsRowIds.add(row.id);
+    _logsRows.push({
+      id: row.id,
+      timestamp: String(row.timestamp || ''),
+      source: String(row.source || ''),
+      text: String(row.text || ''),
+      level: row.level || logLevelFromText(row.text || '')
+    });
+  });
+  if (_logsRows.length <= LOGS_ROW_LIMIT) return;
+  const trimCount = _logsRows.length - LOGS_ROW_LIMIT;
+  const removed = _logsRows.splice(0, trimCount);
+  removed.forEach(row => _logsRowIds.delete(row.id));
+}
+
+function renderLogsViewer() {
+  const terminal = byId('logs-terminal');
+  if (!terminal) return;
+  if (!_logsRows.length) {
+    terminal.innerHTML = '<div class="logs-empty">No logs yet.</div>';
+    return;
+  }
+  terminal.innerHTML = _logsRows.map(row => (
+    '<div class="log-row log-level-' + escAttr(row.level || 'info') + '">' +
+      '<span class="log-ts">' + esc(formatLogTime(row.timestamp)) + '</span>' +
+      '<span class="log-source">' + esc(row.source || 'pipeline') + '</span>' +
+      '<span class="log-text">' + esc(row.text) + '</span>' +
+    '</div>'
+  )).join('');
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function updateLogsHeader(snapshot, streamData) {
+  const stateEl = byId('logs-live-state');
+  const updatedEl = byId('logs-last-update');
+  const running = Boolean((streamData && streamData.running) || (snapshot && snapshot.pipeline && snapshot.pipeline.running));
+  if (stateEl) {
+    stateEl.textContent = running ? 'Live, pipeline running' : 'Live, idle';
+    stateEl.style.color = running ? 'var(--accent)' : 'var(--green)';
+  }
+  if (updatedEl) {
+    updatedEl.textContent = 'Last update: ' + new Date().toLocaleTimeString([], {hour12: false});
+  }
+}
+
+async function fetchPipelineLogStream(allowReset) {
+  const since = Number.isFinite(_logsPipelineSince) ? _logsPipelineSince : 0;
+  const data = await api('/logs/stream?since=' + encodeURIComponent(String(Math.max(0, since))) + '&tail=400', null, {silent: true});
+  if (!data || typeof data !== 'object') return null;
+  const runKey = String(data.started_at || '');
+  if (allowReset !== false && runKey && _logsPipelineRunKey && runKey !== _logsPipelineRunKey) {
+    _logsPipelineRunKey = runKey;
+    _logsPipelineSince = 0;
+    return fetchPipelineLogStream(false);
+  }
+  if (runKey) _logsPipelineRunKey = runKey;
+
+  const nextSince = asIntOrNull(data.next_since);
+  if (Number.isFinite(nextSince)) _logsPipelineSince = nextSince;
+
+  const entries = [];
+  const lines = Array.isArray(data.lines) ? data.lines : [];
+  lines.forEach(line => {
+    const lineNo = asIntOrNull(line && line.line_no);
+    const text = String((line && line.text) || '');
+    const source = 'pipeline';
+    const id = 'pipeline:' + (runKey || 'unknown') + ':' + (Number.isFinite(lineNo) ? lineNo : Math.random().toString(36).slice(2));
+    entries.push({
+      id,
+      timestamp: String((line && line.timestamp) || ''),
+      source,
+      text
+    });
+  });
+  return {data, entries};
+}
+
+async function fetchFileLogs() {
+  const snapshot = await api('/logs?tail=160', null, {silent: true});
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  _logsLastSnapshot = snapshot;
+  const entries = [];
+  const files = Array.isArray(snapshot.log_files) ? snapshot.log_files : [];
+  files.forEach(file => {
+    const path = String((file && file.path) || '');
+    const name = String((file && file.name) || '') || 'server';
+    const floor = asIntOrNull(_logsFileFloorByPath[path]) || 0;
+    const lines = Array.isArray(file && file.lines) ? file.lines : [];
+    lines.forEach(line => {
+      const lineNo = asIntOrNull(line && line.line_no);
+      if (!Number.isFinite(lineNo) || lineNo <= floor) return;
+      const text = String((line && line.text) || '');
+      entries.push({
+        id: 'file:' + path + ':' + lineNo,
+        timestamp: String((line && line.timestamp) || ''),
+        source: name,
+        text
+      });
+    });
+  });
+  return {snapshot, entries};
+}
+
+async function pollLogsPage() {
+  const [streamResp, filesResp] = await Promise.all([
+    fetchPipelineLogStream(true),
+    fetchFileLogs()
+  ]);
+  if (streamResp && Array.isArray(streamResp.entries)) appendLogs(streamResp.entries);
+  if (filesResp && Array.isArray(filesResp.entries)) appendLogs(filesResp.entries);
+  renderLogsViewer();
+  updateLogsHeader(filesResp && filesResp.snapshot, streamResp && streamResp.data);
+  if (_logsActive) {
+    clearLogsPollTimer();
+    _logsPollTimer = setTimeout(pollLogsPage, LOGS_POLL_MS);
+  }
+}
+
+function startLogsPolling() {
+  if (_logsActive) return;
+  _logsActive = true;
+  pollLogsPage();
+}
+
+function stopLogsPolling() {
+  _logsActive = false;
+  clearLogsPollTimer();
+}
+
+async function clearLogsViewer() {
+  const ok = await confirmAction({
+    title: 'Clear Logs Viewer',
+    message: 'This clears only the live viewer in this session. Source logs stay on disk.',
+    confirmLabel: 'Clear'
+  });
+  if (!ok) return;
+  if (_logsLastSnapshot && Array.isArray(_logsLastSnapshot.log_files)) {
+    _logsLastSnapshot.log_files.forEach(file => {
+      const path = String((file && file.path) || '');
+      const total = asIntOrNull(file && file.total_lines);
+      if (path && Number.isFinite(total)) _logsFileFloorByPath[path] = total;
+    });
+  }
+  const pipelineTotal = asIntOrNull(_logsLastSnapshot && _logsLastSnapshot.pipeline && _logsLastSnapshot.pipeline.total_lines);
+  if (Number.isFinite(pipelineTotal)) _logsPipelineSince = pipelineTotal;
+  _logsRows = [];
+  _logsRowIds = new Set();
+  renderLogsViewer();
+  toast('Logs viewer cleared', 'warning');
+}
+
+async function refreshLogsNow() {
+  clearLogsPollTimer();
+  await pollLogsPage();
+}
+
 // ═══ VIEW SWITCHING ═══
 function switchView(view) {
   closeDetail();
@@ -2933,10 +4003,15 @@ function switchView(view) {
   if (view === 'settings') loadSettings();
   if (view === 'dashboard') loadDashboard();
   if (view === 'pipeline') {
+    if (!_appDefaultsLoaded) setPipelineLoadingState(true);
     renderPipelineUi();
     if (_cachedStats) updatePipelineView(_cachedStats);
     else loadDashboard();
+    pollPipelineStatus();
+    loadDocuments();
   }
+  if (view === 'logs') startLogsPolling();
+  else stopLogsPolling();
 }
 
 // ═══ JOBS TABLE ═══
@@ -2953,6 +4028,7 @@ function filterJobs() {
 }
 
 async function loadJobs() {
+  setJobsLoadingState(true);
   const search = document.getElementById('job-search')?.value || '';
   let params = '?limit=200&sort=fit_score&order=desc';
   if (search) params += '&search=' + encodeURIComponent(search);
@@ -2975,21 +4051,25 @@ async function loadJobs() {
   if (currentFilter === 'remote') params += '&location=remote';
   if (currentFilter === 'applied') params += '&status=applied';
 
-  const data = await api('/jobs' + params);
-  if (!data) {
-    setJobsTableMessage('Unable to load jobs.');
-    return;
+  try {
+    const data = await api('/jobs' + params);
+    if (!data) {
+      setJobsTableMessage('Unable to load jobs. Check server status and try again.');
+      return;
+    }
+    if (!Array.isArray(data.jobs)) {
+      setJobsTableMessage('No jobs data returned from the server.');
+      return;
+    }
+    JOBS = data.jobs;
+    if (!JOBS.length) {
+      setJobsTableMessage('No jobs match your current filters yet.');
+      return;
+    }
+    renderJobsTable(JOBS);
+  } finally {
+    setJobsLoadingState(false);
   }
-  if (!Array.isArray(data.jobs)) {
-    setJobsTableMessage('No jobs data returned.');
-    return;
-  }
-  JOBS = data.jobs;
-  if (!JOBS.length) {
-    setJobsTableMessage('No jobs found for the current filters.');
-    return;
-  }
-  renderJobsTable(JOBS);
 }
 
 function renderJobsTable(jobs) {
@@ -3072,6 +4152,43 @@ async function openDetail(encodedUrl) {
     setMarkdownBlock(document.getElementById('detail-resume'), j.tailored_resume_text);
   } else {
     resumeSection.style.display = 'none';
+  }
+
+  // Resume PDF buttons
+  const resumePdfBtns = document.getElementById('detail-resume-pdf-btns');
+  if (j.resume_pdf_available && j.tailored_resume_path) {
+    const pdfPath = j.tailored_resume_path.replace('.txt', '.pdf');
+    const pdfUrl = '/api/files/pdf?path=' + encodeURIComponent(pdfPath);
+    resumePdfBtns.style.display = 'flex';
+    document.getElementById('detail-resume-pdf-view').onclick = () => window.open(pdfUrl, '_blank');
+    document.getElementById('detail-resume-pdf-dl').onclick = () => {
+      const a = document.createElement('a'); a.href = pdfUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
+    };
+  } else {
+    resumePdfBtns.style.display = 'none';
+  }
+
+  // Cover letter section
+  const clSection = document.getElementById('detail-cover-letter-section');
+  if (j.cover_letter_text) {
+    clSection.style.display = 'block';
+    setMarkdownBlock(document.getElementById('detail-cover-letter'), j.cover_letter_text);
+  } else {
+    clSection.style.display = 'none';
+  }
+
+  // Cover letter PDF buttons
+  const clPdfBtns = document.getElementById('detail-cl-pdf-btns');
+  if (j.cover_letter_pdf_available && j.cover_letter_path) {
+    const clPdfPath = j.cover_letter_path.replace('.txt', '.pdf');
+    const clPdfUrl = '/api/files/pdf?path=' + encodeURIComponent(clPdfPath);
+    clPdfBtns.style.display = 'flex';
+    document.getElementById('detail-cl-pdf-view').onclick = () => window.open(clPdfUrl, '_blank');
+    document.getElementById('detail-cl-pdf-dl').onclick = () => {
+      const a = document.createElement('a'); a.href = clPdfUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
+    };
+  } else {
+    clPdfBtns.style.display = 'none';
   }
 
   const postingUrl = String(j.url || url || '').trim();
@@ -3173,6 +4290,73 @@ function selectedBoardsFromSearches(searches) {
   return fromConfig.map(normalizeBoardName).filter(Boolean);
 }
 
+function boardAliasKey(value) {
+  return normalizeBoardName(value).replace(/_/g, '');
+}
+
+function pickAvailableBoards(candidates, options) {
+  const opts = options || {};
+  const skipBlocked = Boolean(opts.skipBlocked);
+  const rows = Array.isArray(candidates) ? candidates : [];
+  if (!_boardCatalog.length) return rows.map(normalizeBoardName).filter(Boolean);
+
+  const map = new Map();
+  _boardCatalog.forEach(board => {
+    const id = boardId(board);
+    if (!id) return;
+    const blocked = Boolean(board && board.blocked);
+    if (skipBlocked && blocked) return;
+    const alias = boardAliasKey(id);
+    if (!map.has(alias)) map.set(alias, id);
+  });
+
+  const picked = [];
+  const seen = new Set();
+  rows.forEach(value => {
+    const alias = boardAliasKey(value);
+    if (!alias || seen.has(alias)) return;
+    const resolved = map.get(alias);
+    if (!resolved) return;
+    seen.add(alias);
+    picked.push(resolved);
+  });
+  return picked;
+}
+
+function hasExistingSearches(searches) {
+  const data = searches && typeof searches === 'object' ? searches : {};
+  const queries = Array.isArray(data.queries) && data.queries.some(q => String((q && q.query) || '').trim());
+  const locations = Array.isArray(data.locations) && data.locations.some(l => {
+    if (!l || typeof l !== 'object') return false;
+    if (l.remote === true) return true;
+    return Boolean(String(l.location || '').trim());
+  });
+  const country = Boolean(String(data.country || '').trim());
+  const workMode = Boolean(String(data.work_mode || '').trim());
+  return queries || locations || country || workMode;
+}
+
+function defaultSetupBoards(searches) {
+  const configured = selectedBoardsFromSearches(searches);
+  if (Array.isArray(configured) && configured.length) {
+    const fromConfig = pickAvailableBoards(configured, {skipBlocked: true});
+    if (fromConfig.length) return fromConfig;
+  }
+  const fallback = pickAvailableBoards(SETUP_FALLBACK_BOARDS, {skipBlocked: true});
+  return fallback.length ? fallback : (Array.isArray(configured) ? configured : []);
+}
+
+function setupBoardsSelection(searches) {
+  const selected = selectedBoardsFromSearches(searches);
+  if (hasExistingSearches(searches)) return selected;
+  return defaultSetupBoards(searches);
+}
+
+function boardsLoadErrorHtml() {
+  return '<div style="font-size:12px;color:var(--red);margin-bottom:8px">Unable to load discovery boards.</div>' +
+    '<button class="btn btn-sm" type="button" onclick="retryBoardsLoad(event)">Retry</button>';
+}
+
 function renderBoardsInContainer(containerSelector, selectedBoards) {
   const container = document.querySelector(containerSelector);
   if (!container) return;
@@ -3221,9 +4405,10 @@ function renderBoardsInContainer(containerSelector, selectedBoards) {
 }
 
 function renderBoardsForCurrentConfig() {
-  const selected = selectedBoardsFromSearches(_currentSearches);
-  renderBoardsInContainer('#settings-board-pills', selected);
-  renderBoardsInContainer('#setup-board-pills', selected);
+  const settingsSelected = selectedBoardsFromSearches(_currentSearches);
+  const setupSelected = setupBoardsSelection(_currentSearches);
+  renderBoardsInContainer('#settings-board-pills', settingsSelected);
+  renderBoardsInContainer('#setup-board-pills', setupSelected);
 }
 
 async function ensureBoardsLoaded(force) {
@@ -3233,7 +4418,7 @@ async function ensureBoardsLoaded(force) {
   const data = await api('/boards');
   if (!data || !Array.isArray(data.boards)) {
     _boardCatalog = [];
-    const msg = '<div style="font-size:12px;color:var(--red)">Unable to load discovery boards.</div>';
+    const msg = boardsLoadErrorHtml();
     const settingsContainer = byId('settings-board-pills');
     const setupContainer = byId('setup-board-pills');
     if (settingsContainer) settingsContainer.innerHTML = msg;
@@ -3252,6 +4437,25 @@ async function ensureBoardsLoaded(force) {
     .filter(board => board.id);
   renderBoardsForCurrentConfig();
   return _boardCatalog;
+}
+
+async function retryBoardsLoad(event) {
+  if (event && event.preventDefault) event.preventDefault();
+  const btn = event && event.currentTarget ? event.currentTarget : null;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Retrying...';
+  }
+  const loaded = await ensureBoardsLoaded(true);
+  if (!loaded) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Retry';
+    }
+    toast('Unable to load discovery boards. Check server connection and try again.', 'error');
+    return;
+  }
+  toast('Discovery boards loaded.', 'success');
 }
 
 function syncBoardPillFromInput(input) {
@@ -3342,7 +4546,10 @@ async function loadSettings() {
     api('/config/searches'),
     api('/config/resume')
   ]);
-  if (!profile || !searches) return;
+  if (!profile || !searches) {
+    setGlobalStatusBanner('Unable to load settings data from the server.', 'error');
+    return false;
+  }
   _currentProfile = profile && typeof profile === 'object' ? profile : {};
   _currentSearches = searches && typeof searches === 'object' ? searches : {};
   _currentResumeText = resume && typeof resume.text === 'string' ? resume.text : '';
@@ -3352,9 +4559,85 @@ async function loadSettings() {
   syncSetupFromConfig();
   await loadCapsolverSettings();
   await loadSystemCheck();
+  return true;
+}
+
+function parseNumericField(id) {
+  const raw = String(byId(id)?.value || '').trim();
+  if (!raw) return {raw, value: null, valid: true};
+  const value = Number(raw);
+  return {raw, value, valid: Number.isFinite(value)};
+}
+
+function validateSettingsInputs() {
+  clearFieldErrors('#view-settings');
+  let firstInvalidId = '';
+  const mark = (id, message) => {
+    setFieldError(id, message);
+    if (!firstInvalidId) firstInvalidId = id;
+  };
+
+  const fullName = String(byId('settings-full-name')?.value || '').trim();
+  const email = String(byId('settings-email')?.value || '').trim();
+  const targetRole = String(byId('settings-target-role')?.value || '').trim();
+  const resumeText = String(byId('settings-resume-text')?.value || '').trim();
+  const primaryLocation = String(byId('settings-primary-location')?.value || '').trim();
+  const includeRemote = String(byId('settings-include-remote')?.value || 'Yes');
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const queries = getSearchQueriesFromUI();
+  const selectedBoards = readBoardsFromContainer('#settings-board-pills');
+  let queryValid = true;
+  let boardValid = true;
+
+  if (!fullName) mark('settings-full-name', 'Full name is required.');
+  if (!email) mark('settings-email', 'Email is required.');
+  else if (!emailOk) mark('settings-email', 'Enter a valid email address.');
+  if (!targetRole) mark('settings-target-role', 'Target role is required.');
+  if (!resumeText) mark('settings-resume-text', 'Resume text cannot be empty.');
+  if (includeRemote !== 'Yes' && !primaryLocation) {
+    mark('settings-primary-location', 'Add a location or enable remote.');
+  }
+  if (!queries.length) {
+    queryValid = false;
+    const queryList = byId('query-list');
+    if (queryList) {
+      queryList.insertAdjacentHTML('beforeend', '<div class="field-error" data-field-error-for="query-list">Add at least one query.</div>');
+    }
+  }
+  if (!selectedBoards.length) {
+    boardValid = false;
+    const boardContainer = byId('settings-board-pills');
+    if (boardContainer) {
+      boardContainer.insertAdjacentHTML('beforeend', '<div class="field-error" data-field-error-for="settings-board-pills">Select at least one site to search.</div>');
+    }
+  }
+
+  const years = parseNumericField('settings-years-experience');
+  if (!years.valid) mark('settings-years-experience', 'Years of experience must be a number.');
+  else if (years.value != null && years.value < 0) mark('settings-years-experience', 'Years of experience cannot be negative.');
+
+  const salaryMin = parseNumericField('settings-salary-min');
+  const salaryMax = parseNumericField('settings-salary-max');
+  if (!salaryMin.valid) mark('settings-salary-min', 'Salary min must be a number.');
+  if (!salaryMax.valid) mark('settings-salary-max', 'Salary max must be a number.');
+  if (salaryMin.value != null && salaryMax.value != null && salaryMin.value > salaryMax.value) {
+    mark('settings-salary-max', 'Salary max must be greater than or equal to salary min.');
+  }
+
+  if (firstInvalidId) {
+    byId(firstInvalidId)?.focus();
+    return false;
+  }
+  if (!queryValid) byId('settings-add-query')?.focus();
+  else if (!boardValid) byId('settings-board-pills')?.scrollIntoView({behavior: 'smooth', block: 'center'});
+  return queryValid && boardValid;
 }
 
 async function saveSettings() {
+  if (!validateSettingsInputs()) {
+    toast('Please fix the highlighted form errors.', 'warning');
+    return;
+  }
   const profile = buildProfileFromSettings(_currentProfile);
   const searches = buildSearchesFromSettings(_currentSearches);
   const resumeText = byId('settings-resume-text')?.value || '';
@@ -3437,8 +4720,18 @@ function updateQueryTierBadge(selectEl) {
 
 function removeQueryRow(btn) {
   const row = btn.closest('[data-query-row]');
-  if (row) row.remove();
-  if (!document.querySelector('#query-list [data-query-row]')) renderQueries([]);
+  if (!row) return;
+  confirmAction({
+    title: 'Remove Query',
+    message: 'Remove this search query from settings?',
+    confirmLabel: 'Remove',
+    tone: 'danger'
+  }).then(ok => {
+    if (!ok) return;
+    row.remove();
+    toast('Query removed', 'warning');
+    if (!document.querySelector('#query-list [data-query-row]')) renderQueries([]);
+  });
 }
 
 function getSearchQueriesFromUI() {
@@ -3529,6 +4822,13 @@ async function persistCapsolverSettings(options) {
 }
 
 async function saveCapsolverSettings() {
+  clearFieldError('settings-capsolver-key');
+  const key = String(byId('settings-capsolver-key')?.value || '').trim();
+  if (key && key.length < 10) {
+    setFieldError('settings-capsolver-key', 'API key looks too short.');
+    toast('Please enter a valid CapSolver API key.', 'warning');
+    return;
+  }
   const saved = await persistCapsolverSettings();
   if (!saved) return;
   toast('CapSolver settings saved', 'success');
@@ -3610,7 +4910,12 @@ async function openConfigFolder() {
 }
 
 async function resetDatabase() {
-  const ok = window.confirm('Reset database and delete all discovered jobs, scores, and apply history?');
+  const ok = await confirmAction({
+    title: 'Reset Database',
+    message: 'Delete all discovered jobs, scores, and apply history? This cannot be undone.',
+    confirmLabel: 'Reset Database',
+    tone: 'danger'
+  });
   if (!ok) return;
   const data = await api('/system/reset-database', {method: 'POST'});
   if (!data) return;
@@ -3622,9 +4927,110 @@ async function resetDatabase() {
 
 // ═══ PIPELINE ═══
 let _pipelineRunning = false;
+let _pipelineStartedAtIso = '';
+let _pipelineStageLabel = '';
+
+function clearPipelinePollTimer() {
+  if (_pipelinePollTimer) {
+    clearTimeout(_pipelinePollTimer);
+    _pipelinePollTimer = null;
+  }
+}
+
+function schedulePipelinePoll() {
+  clearPipelinePollTimer();
+  if (_pipelineRunning) {
+    _pipelinePollTimer = setTimeout(pollPipelineStatus, PIPELINE_STATUS_POLL_MS);
+  }
+}
+
+function parsePipelineStageLabel(stageText) {
+  const raw = String(stageText || '').trim();
+  if (!raw) return '--';
+  const labels = raw.split(',').map(s => s.trim()).filter(Boolean).map(stageTitle);
+  return labels.join(', ') || '--';
+}
+
+function formatElapsedFromIso(startedAtIso) {
+  if (!startedAtIso) return '00:00';
+  const startedAt = new Date(startedAtIso);
+  if (Number.isNaN(startedAt.getTime())) return '00:00';
+  const seconds = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return mm + ':' + ss;
+}
+
+function renderPipelineLivePanel(state) {
+  const panel = byId('pipeline-live-status');
+  if (!panel) return;
+  const spinner = panel.querySelector('.pipeline-live-spinner');
+  const stateEl = byId('pipeline-live-state');
+  const stageEl = byId('pipeline-live-stage');
+  const elapsedEl = byId('pipeline-live-elapsed');
+  panel.style.display = 'block';
+  const running = Boolean(state && state.running);
+  if (spinner) spinner.style.visibility = running ? 'visible' : 'hidden';
+  if (stateEl) {
+    stateEl.textContent = state && state.label ? state.label : (running ? 'Running' : 'Idle');
+    stateEl.style.color = running ? 'var(--accent)' : (state && state.error ? 'var(--red)' : 'var(--green)');
+  }
+  if (stageEl) {
+    const stageLabel = state && state.stageLabel ? state.stageLabel : _pipelineStageLabel || '--';
+    stageEl.textContent = 'Stages: ' + stageLabel;
+  }
+  if (elapsedEl) {
+    const started = state && state.startedAtIso ? state.startedAtIso : _pipelineStartedAtIso;
+    elapsedEl.textContent = 'Elapsed: ' + formatElapsedFromIso(started);
+  }
+}
+
+function renderPipelineLiveLog(output) {
+  const logEl = byId('pipeline-live-log');
+  if (!logEl) return;
+  const text = String(output || '');
+  if (text.length < _pipelineLastOutputLength) _pipelineLastOutputLength = 0;
+  if (text.length === _pipelineLastOutputLength) return;
+  const lines = text.split(/\r?\n/);
+  logEl.textContent = lines.slice(-PIPELINE_LOG_MAX_LINES).join('\n') || 'No pipeline output yet.';
+  logEl.scrollTop = logEl.scrollHeight;
+  _pipelineLastOutputLength = text.length;
+}
+
+async function refreshStatsWhilePipelineRunning(force) {
+  const now = Date.now();
+  if (!force && now - _pipelineLastStatsRefreshAt < PIPELINE_STATUS_POLL_MS - 250) return;
+  _pipelineLastStatsRefreshAt = now;
+  const stats = await api('/stats', null, {silent: true});
+  if (!stats) return;
+  applyDashboardStats(stats, {lightweight: true});
+}
+
+function startPipelineTracking(meta) {
+  const info = meta && typeof meta === 'object' ? meta : {};
+  clearGlobalStatusBanner();
+  _pipelineRunning = true;
+  _pipelineLastOutputLength = 0;
+  _pipelineLastStatsRefreshAt = 0;
+  _pipelineStartedAtIso = String(info.started_at || '').trim() || new Date().toISOString();
+  _pipelineStageLabel = parsePipelineStageLabel(info.resolved_stages || info.stages || '');
+  renderPipelineLivePanel({
+    running: true,
+    label: 'Running',
+    stageLabel: _pipelineStageLabel,
+    startedAtIso: _pipelineStartedAtIso
+  });
+  renderPipelineLiveLog('');
+  schedulePipelinePoll();
+  pollPipelineStatus();
+}
 
 async function runStage(stage) {
   if (_pipelineRunning) { toast('Pipeline already running', 'warning'); return; }
+  if (!validatePipelineInputs()) {
+    toast('Please fix pipeline input errors before running.', 'warning');
+    return;
+  }
   const ms = getPipelineMinScoreInput();
   const workers = getPipelineWorkersInput();
   const dryRun = getPipelineDryRunInput();
@@ -3635,15 +5041,18 @@ async function runStage(stage) {
   });
   if (!data) return;
   if (data && data.ok) {
-    _pipelineRunning = true;
     toast('Pipeline started: ' + stage, 'info');
-    pollPipelineStatus();
+    startPipelineTracking(data);
   } else {
     toast('Unable to start pipeline stage', 'error');
   }
 }
 
 async function runAllStages() {
+  if (!validatePipelineInputs()) {
+    toast('Please fix pipeline input errors before running.', 'warning');
+    return;
+  }
   const ms = getPipelineMinScoreInput();
   const workers = getPipelineWorkersInput();
   const dryRun = getPipelineDryRunInput();
@@ -3660,15 +5069,15 @@ async function runAllStages() {
   });
   if (!data) return;
   if (data && data.ok) {
-    _pipelineRunning = true;
     toast('Full pipeline started', 'info');
-    pollPipelineStatus();
+    startPipelineTracking(data);
   } else {
     toast('Unable to start full pipeline', 'error');
   }
 }
 
 async function handlePipelineMinScoreChange() {
+  if (!validatePipelineInputs()) return;
   const ms = getPipelineMinScoreInput();
   setPipelineMinScoreInput(ms);
   const latestProfile = await api('/config/profile');
@@ -3684,26 +5093,97 @@ async function handlePipelineMinScoreChange() {
 }
 
 async function stopPipeline() {
+  const ok = await confirmAction({
+    title: 'Stop Pipeline',
+    message: 'Stop the active pipeline run now?',
+    confirmLabel: 'Stop',
+    tone: 'danger'
+  });
+  if (!ok) return;
   const data = await api('/pipeline/stop', {method: 'POST'});
   if (!data) return;
   _pipelineRunning = false;
+  clearPipelinePollTimer();
+  renderPipelineLivePanel({running: false, label: 'Stopped', stageLabel: _pipelineStageLabel, startedAtIso: _pipelineStartedAtIso});
   toast('Pipeline stopped', 'warning');
 }
 
 async function pollPipelineStatus() {
-  const data = await api('/pipeline/status');
+  const data = await api('/pipeline/status', null, {silent: true});
   if (!data) {
-    if (_pipelineRunning) setTimeout(pollPipelineStatus, getPollIntervalMs());
+    if (_pipelineRunning) {
+      setGlobalStatusBanner('Pipeline is running, but status polling cannot reach the server. Retrying every few seconds.', 'error');
+      renderPipelineLivePanel({
+        running: true,
+        label: 'Connection lost, retrying',
+        stageLabel: _pipelineStageLabel,
+        startedAtIso: _pipelineStartedAtIso,
+        error: true
+      });
+      schedulePipelinePoll();
+    }
     return;
   }
-  if (data && data.running) {
-    setTimeout(pollPipelineStatus, getPollIntervalMs());
+
+  _pipelineRunning = Boolean(data.running);
+  if (data.started_at) _pipelineStartedAtIso = String(data.started_at);
+  if (data.resolved_stages || data.stages) {
+    _pipelineStageLabel = parsePipelineStageLabel(data.resolved_stages || data.stages);
+  }
+  renderPipelineLivePanel({
+    running: _pipelineRunning,
+    label: _pipelineRunning ? 'Running' : 'Finished',
+    stageLabel: _pipelineStageLabel,
+    startedAtIso: _pipelineStartedAtIso
+  });
+  renderPipelineLiveLog(data.output || '');
+  await refreshStatsWhilePipelineRunning(_pipelineRunning);
+
+  if (_pipelineRunning) {
+    schedulePipelinePoll();
+    return;
+  }
+
+  clearPipelinePollTimer();
+  const hasRunMeta = Boolean(
+    (data.started_at && String(data.started_at).trim()) ||
+    (data.stages && String(data.stages).trim()) ||
+    (data.resolved_stages && String(data.resolved_stages).trim()) ||
+    (data.output && String(data.output).trim())
+  );
+  if (!hasRunMeta) {
+    const panel = byId('pipeline-live-status');
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+  const rc = asIntOrNull(data.returncode);
+  if (Number.isFinite(rc) && rc === 0) {
+    clearGlobalStatusBanner();
+    renderPipelineLivePanel({
+      running: false,
+      label: 'Completed successfully',
+      stageLabel: _pipelineStageLabel,
+      startedAtIso: _pipelineStartedAtIso
+    });
+    toast('Pipeline completed successfully', 'success');
   } else {
-    _pipelineRunning = false;
-    if (data && data.output) {
-      toast('Pipeline finished', 'success');
-    }
-    loadDashboard();
+    const reason = Number.isFinite(rc) ? ('return code ' + rc) : 'unknown error';
+    const outputTail = String(data.output || '').split(/\r?\n/).filter(Boolean).slice(-5).join(' | ');
+    const msg = 'Pipeline failed, ' + reason + (outputTail ? '. ' + outputTail : '');
+    setGlobalStatusBanner(msg, 'error');
+    renderPipelineLivePanel({
+      running: false,
+      label: 'Failed',
+      stageLabel: _pipelineStageLabel,
+      startedAtIso: _pipelineStartedAtIso,
+      error: true
+    });
+    toast('Pipeline failed, check live log for details', 'error');
+  }
+
+  await loadDashboard({silent: true});
+  if (document.querySelector('#view-jobs.active')) {
+    await loadJobs();
   }
 }
 
@@ -3713,49 +5193,44 @@ let _setupLoaded = false;
 
 function loadProfileIntoSetup(profile) {
   const p = (profile && profile.personal) || {};
-  const exp = (profile && profile.experience) || {};
   const comp = (profile && profile.compensation) || {};
-  setFieldValue('setup-full-name', p.full_name || '');
-  setFieldValue('setup-email', p.email || '');
-  setFieldValue('setup-phone', p.phone || '');
-  setFieldValue('setup-city-state', formatCityState(p.city, p.province_state));
-  setFieldValue('setup-target-role', exp.target_role || '');
+  setFieldValue('setup-profile-name', p.full_name || '');
+  setFieldValue('setup-profile-email', p.email || '');
+  setFieldValue('setup-profile-location', formatCityState(p.city, p.province_state));
   setFieldValue('setup-salary-min', comp.salary_range_min || '');
   setFieldValue('setup-salary-max', comp.salary_range_max || '');
 }
 
 function loadSearchesIntoSetup(searches) {
   const data = searches && typeof searches === 'object' ? searches : {};
-  const queries = Array.isArray(data.queries) ? data.queries.map(q => (q && q.query) || '').filter(Boolean) : [];
-  setFieldValue('setup-search-queries', queries.join('\n'));
+  const titles = Array.isArray(data.queries) ? data.queries.map(q => (q && q.query) || '').filter(Boolean) : [];
+  setFieldValue('setup-job-titles', titles.join('\n'));
 
   const locations = Array.isArray(data.locations) ? data.locations : [];
-  const primary = locations.find(l => l && l.location && l.remote === false) ||
-    locations.find(l => l && l.location && String(l.location).toLowerCase() !== 'remote');
   const includeRemote = locations.some(l => l && (l.remote === true || String(l.location || '').toLowerCase() === 'remote'));
-  setFieldValue('setup-location', primary ? primary.location : '');
-  setFieldValue('setup-include-remote', includeRemote ? 'Yes' : 'No');
-  setBoardsInContainer('#setup-board-pills', selectedBoardsFromSearches(data));
+  const includeOnsite = locations.some(l => l && l.location && l.remote === false && String(l.location).toLowerCase() !== 'remote');
+  const mode = data.work_mode || (includeRemote && includeOnsite ? 'hybrid' : includeRemote ? 'remote' : 'onsite');
+  setFieldValue('setup-work-mode', mode);
+  setFieldValue('setup-search-country', data.country || '');
+  setBoardsInContainer('#setup-board-pills', setupBoardsSelection(data));
 }
 
 function syncSetupFromConfig() {
   loadProfileIntoSetup(_currentProfile);
   loadSearchesIntoSetup(_currentSearches);
   setFieldValue('setup-resume-text', _currentResumeText || '');
+  renderSetupReview();
 }
 
 function buildProfileFromSetup(baseProfile) {
   const profile = cloneObj(baseProfile);
   profile.personal = profile.personal || {};
-  profile.experience = profile.experience || {};
   profile.compensation = profile.compensation || {};
-  const cityState = parseCityState(byId('setup-city-state')?.value || '');
-  profile.personal.full_name = (byId('setup-full-name')?.value || '').trim();
-  profile.personal.email = (byId('setup-email')?.value || '').trim();
-  profile.personal.phone = (byId('setup-phone')?.value || '').trim();
+  const cityState = parseCityState(byId('setup-profile-location')?.value || '');
+  profile.personal.full_name = (byId('setup-profile-name')?.value || '').trim();
+  profile.personal.email = (byId('setup-profile-email')?.value || '').trim();
   profile.personal.city = cityState.city;
   profile.personal.province_state = cityState.state;
-  profile.experience.target_role = (byId('setup-target-role')?.value || '').trim();
   profile.compensation.salary_range_min = (byId('setup-salary-min')?.value || '').trim();
   profile.compensation.salary_range_max = (byId('setup-salary-max')?.value || '').trim();
   return profile;
@@ -3763,17 +5238,23 @@ function buildProfileFromSetup(baseProfile) {
 
 function buildSearchesFromSetup(baseSearches) {
   const searches = cloneObj(baseSearches);
-  const rawLines = (byId('setup-search-queries')?.value || '').split('\n');
+  const parseLines = (value) => String(value || '')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+  const rawLines = parseLines(byId('setup-job-titles')?.value || '');
   searches.queries = rawLines.map(line => line.trim()).filter(Boolean).map(query => ({query, tier: 1}));
 
+  const locationText = (byId('setup-profile-location')?.value || '').trim();
+  const mode = (byId('setup-work-mode')?.value || 'remote').trim().toLowerCase();
   const locations = [];
-  const primaryLocation = (byId('setup-location')?.value || '').trim();
-  const includeRemote = (byId('setup-include-remote')?.value || 'Yes') === 'Yes';
-  if (primaryLocation) locations.push({location: primaryLocation, remote: false});
-  if (includeRemote) locations.push({location: 'Remote', remote: true});
+  if (locationText) locations.push({location: locationText, remote: false});
+  if (mode === 'remote' || mode === 'hybrid') locations.push({location: 'Remote', remote: true});
   searches.locations = locations;
+  searches.work_mode = mode;
   searches.boards = readBoardsFromContainer('#setup-board-pills');
   searches.sites = Array.isArray(searches.boards) ? [...searches.boards] : [];
+  searches.country = (byId('setup-search-country')?.value || '').trim();
   return searches;
 }
 
@@ -3794,62 +5275,152 @@ async function loadSetupData() {
   return true;
 }
 
-async function loadSetupSystemCheck() {
-  const data = await api('/system/check');
-  if (!data || !Array.isArray(data.checks)) return;
-  const container = byId('setup-system-checks');
-  if (!container) return;
-  container.innerHTML = '';
-  data.checks.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'system-check';
-    div.innerHTML = '<div class="check-icon ' + (c.ok ? 'check-ok' : 'check-missing') + '">' + (c.ok ? 'OK' : '!') + '</div>' +
-      '<div><div class="check-name md-inline">' + mdInline(c.name) + '</div><div class="check-detail md-inline">' + mdInline(c.detail) + '</div></div>';
-    container.appendChild(div);
-  });
+function setupValue(id) {
+  return (byId(id)?.value || '').trim();
 }
 
-async function saveSetupResume() {
-  const text = byId('setup-resume-text')?.value || '';
-  _currentResumeText = text;
-  const data = await api('/config/resume', {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({text: text})
-  });
-  return Boolean(data);
+function validateSetupStep(step) {
+  if (step === 0) {
+    if (!setupValue('setup-profile-name')) return 'Name is required.';
+    if (!setupValue('setup-profile-email')) return 'Email is required.';
+    if (!setupValue('setup-profile-location')) return 'Location is required.';
+    return '';
+  }
+  if (step === 1) {
+    if (!setupValue('setup-resume-text')) return 'Resume text is required.';
+    return '';
+  }
+  if (step === 2) {
+    clearFieldError('setup-salary-min');
+    clearFieldError('setup-salary-max');
+    clearFieldError('setup-board-pills');
+    if (!setupValue('setup-job-titles')) return 'Add at least one job title.';
+    const salaryMinRaw = setupValue('setup-salary-min');
+    const salaryMaxRaw = setupValue('setup-salary-max');
+    const salaryMin = salaryMinRaw ? Number(salaryMinRaw) : null;
+    const salaryMax = salaryMaxRaw ? Number(salaryMaxRaw) : null;
+    if (salaryMinRaw && !Number.isFinite(salaryMin)) {
+      setFieldError('setup-salary-min', 'Salary min must be a number.');
+      return 'Salary min must be a number.';
+    }
+    if (salaryMaxRaw && !Number.isFinite(salaryMax)) {
+      setFieldError('setup-salary-max', 'Salary max must be a number.');
+      return 'Salary max must be a number.';
+    }
+    if (salaryMin != null && salaryMax != null && salaryMin > salaryMax) {
+      setFieldError('setup-salary-max', 'Salary max must be greater than or equal to salary min.');
+      return 'Salary min cannot be greater than salary max.';
+    }
+    const boards = readBoardsFromContainer('#setup-board-pills');
+    if (!boards.length) {
+      setFieldError('setup-board-pills', 'Select at least one site to search.');
+      return 'Select at least one site to search.';
+    }
+    return '';
+  }
+  return '';
 }
 
-async function saveSetupProfile() {
+function buildSetupDefaultsPayload() {
   const profile = buildProfileFromSetup(_currentProfile);
-  const data = await api('/config/profile', {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(profile)
-  });
-  if (!data) return false;
-  _currentProfile = profile;
-  loadProfileIntoSettings(profile);
-  return true;
-}
-
-async function saveSetupSearches() {
   const searches = buildSearchesFromSetup(_currentSearches);
-  const data = await api('/config/searches', {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(searches)
-  });
-  if (!data) return false;
-  _currentSearches = searches;
-  loadSearchesIntoSettings(searches);
-  return true;
+  const resumeText = setupValue('setup-resume-text');
+  return {
+    profile: profile,
+    searches: searches,
+    resume: {text: resumeText},
+    onboarding: {
+      completed: true,
+      completed_at: new Date().toISOString()
+    }
+  };
 }
 
-async function saveSetupStep(step) {
-  if (step === 1) return saveSetupResume();
-  if (step === 2) return saveSetupProfile();
-  if (step === 3) return saveSetupSearches();
+async function persistSetupConfig(payload) {
+  const config = payload || {};
+  const profile = cloneObj(config.profile || {});
+  const searches = config.searches || {};
+  const resumeText = config.resume && typeof config.resume.text === 'string' ? config.resume.text : '';
+  const onboarding = config.onboarding && typeof config.onboarding === 'object'
+    ? config.onboarding
+    : {completed: true, completed_at: new Date().toISOString()};
+  profile.onboarding = onboarding;
+  const [profileResp, searchesResp, resumeResp] = await Promise.all([
+    api('/config/profile', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(profile)
+    }),
+    api('/config/searches', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(searches)
+    }),
+    api('/config/resume', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text: resumeText})
+    })
+  ]);
+  return Boolean(profileResp && searchesResp && resumeResp);
+}
+
+function renderSetupReview() {
+  const summary = byId('setup-review-summary');
+  if (!summary) return;
+  const titles = setupValue('setup-job-titles').split('\n').map(t => t.trim()).filter(Boolean);
+  const boards = readBoardsFromContainer('#setup-board-pills');
+  const salaryMin = setupValue('setup-salary-min');
+  const salaryMax = setupValue('setup-salary-max');
+  const mode = setupValue('setup-work-mode') || 'remote';
+  summary.innerHTML =
+    '<div><strong>Name:</strong> ' + mdInline(setupValue('setup-profile-name')) + '</div>' +
+    '<div><strong>Email:</strong> ' + mdInline(setupValue('setup-profile-email')) + '</div>' +
+    '<div><strong>Location:</strong> ' + mdInline(setupValue('setup-profile-location')) + '</div>' +
+    '<div><strong>Work mode:</strong> ' + mdInline(mode) + '</div>' +
+    '<div><strong>Salary range:</strong> ' + mdInline((salaryMin || '-') + ' to ' + (salaryMax || '-')) + '</div>' +
+    '<div><strong>Job titles:</strong> ' + (titles.length ? mdInline(titles.join(', ')) : '-') + '</div>' +
+    '<div><strong>Sites:</strong> ' + (boards.length ? mdInline(boards.join(', ')) : '-') + '</div>' +
+    '<div><strong>Resume text:</strong> ' + mdInline(setupValue('setup-resume-text') ? 'Provided' : 'Missing') + '</div>';
+}
+
+function setupResumeExtension(fileName) {
+  const name = String(fileName || '').toLowerCase().trim();
+  if (!name.includes('.')) return '';
+  const idx = name.lastIndexOf('.');
+  return idx >= 0 ? name.slice(idx) : '';
+}
+
+function isSupportedSetupResumeFile(fileName) {
+  const ext = setupResumeExtension(fileName);
+  return ext === '.pdf' || ext === '.docx' || ext === '.rtf' || ext === '.txt';
+}
+
+async function loadSetupResumeFromFile(file) {
+  if (!file) return false;
+  const fileName = String(file.name || '').trim();
+  if (!isSupportedSetupResumeFile(fileName)) {
+    toast('Unsupported file type. Use PDF, DOCX, RTF, or TXT.', 'warning');
+    return false;
+  }
+  const ext = setupResumeExtension(fileName);
+  if (ext === '.txt') {
+    const text = await file.text();
+    setFieldValue('setup-resume-text', text);
+    return true;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file, fileName || 'resume');
+  const result = await api('/config/resume/upload', {
+    method: 'POST',
+    body: formData
+  });
+  if (!result || typeof result.text !== 'string') {
+    toast('Resume upload failed. Please try again or paste resume text manually.', 'error');
+    return false;
+  }
+  setFieldValue('setup-resume-text', result.text);
   return true;
 }
 
@@ -3862,12 +5433,11 @@ async function openSetup() {
       fileInput.dataset.wiredResumeUpload = '1';
       const onFile = async (file) => {
         if (!file) return;
-        if (!file.name.toLowerCase().endsWith('.txt')) {
-          toast('Only .txt files are supported in setup, paste PDF text manually.', 'warning');
-          return;
+        const loaded = await loadSetupResumeFromFile(file);
+        if (loaded && setupStep === 3) {
+          renderSetupReview();
         }
-        const text = await file.text();
-        setFieldValue('setup-resume-text', text);
+        fileInput.value = '';
       };
       dropZone.addEventListener('click', () => fileInput.click());
       dropZone.addEventListener('dragover', e => e.preventDefault());
@@ -3884,10 +5454,14 @@ async function openSetup() {
     _setupLoaded = true;
   }
   const loaded = await loadSetupData();
-  if (!loaded) return;
-  await loadSetupSystemCheck();
+  if (!loaded) {
+    setSetupInlineError('Unable to load setup data from the server.');
+    return;
+  }
+  setSetupInlineError('');
   setupStep = 0;
   updateSetupStep();
+  renderSetupReview();
   byId('setup-overlay').classList.add('open');
 }
 
@@ -3896,10 +5470,15 @@ function closeSetup() {
 }
 
 async function nextSetupStep() {
-  const ok = await saveSetupStep(setupStep);
-  if (!ok) return;
+  const validationError = validateSetupStep(setupStep);
+  if (validationError) {
+    setSetupInlineError(validationError);
+    return;
+  }
+  setSetupInlineError('');
   if (setupStep < 3) {
     setupStep++;
+    if (setupStep === 3) renderSetupReview();
     updateSetupStep();
   }
 }
@@ -3909,11 +5488,31 @@ function prevSetupStep() {
 }
 
 async function finishSetup() {
-  const ok = await saveSetupStep(setupStep);
-  if (!ok) return;
+  const stepErrors = [0, 1, 2].map(validateSetupStep).filter(Boolean);
+  if (stepErrors.length) {
+    setSetupInlineError(stepErrors[0]);
+    return;
+  }
+  setSetupInlineError('');
+
+  const payload = buildSetupDefaultsPayload();
+  const saved = await persistSetupConfig(payload);
+  if (!saved) {
+    setSetupInlineError('Unable to save onboarding configuration. Please try again.');
+    return;
+  }
+
+  _currentProfile = payload.profile;
+  _currentProfile.onboarding = payload.onboarding;
+  _currentSearches = payload.searches;
+  _currentResumeText = payload.resume.text;
   closeSetup();
-  await loadSettings();
-  toast('Setup complete', 'success');
+  const settingsLoaded = await loadSettings();
+  if (!settingsLoaded) {
+    toast('Configuration saved, but settings reload failed.', 'warning');
+  } else {
+    toast('Onboarding complete', 'success');
+  }
 }
 
 function updateSetupStep() {
@@ -3927,6 +5526,10 @@ function updateSetupStep() {
 // ═══ KEYBOARD SHORTCUTS ═══
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (_confirmActive) {
+      closeConfirmDialog(false);
+      return;
+    }
     if (byId('setup-overlay')?.classList.contains('open')) closeSetup();
     closeDetail();
     closeSidebar();
@@ -3934,7 +5537,8 @@ document.addEventListener('keydown', e => {
   if (e.metaKey && e.key === '1') { e.preventDefault(); switchView('dashboard'); }
   if (e.metaKey && e.key === '2') { e.preventDefault(); switchView('jobs'); }
   if (e.metaKey && e.key === '3') { e.preventDefault(); switchView('pipeline'); }
-  if (e.metaKey && e.key === '4') { e.preventDefault(); switchView('settings'); }
+  if (e.metaKey && e.key === '4') { e.preventDefault(); switchView('logs'); }
+  if (e.metaKey && e.key === '5') { e.preventDefault(); switchView('settings'); }
 });
 
 // ═══ INIT ═══
@@ -3947,9 +5551,15 @@ if (setupOverlay) {
   });
 }
 async function initApp() {
+  wireInlineValidation();
   await loadDefaults();
   await loadUserIdentity();
   await loadDashboard();
+  await pollPipelineStatus();
+  const onboardingComplete = Boolean(_currentProfile && _currentProfile.onboarding && _currentProfile.onboarding.completed === true);
+  if (!onboardingComplete) {
+    await openSetup();
+  }
 }
 
 initApp();

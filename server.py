@@ -7,18 +7,21 @@ import json
 import os
 import ast
 import re
+import select
 import shlex
 import shutil
 import sqlite3
 import subprocess
 import sys
+import threading
 from urllib.parse import parse_qs
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 import yaml
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, File, Query, UploadFile
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,9 +61,11 @@ VENV_PYTHON = Path(__file__).parent / "applypilot" / ".venv" / "bin" / "python3"
 APPLYPILOT_BIN = Path(__file__).parent / "applypilot" / ".venv" / "bin" / "applypilot"
 JOBSPY_PATH = Path(__file__).parent / "applypilot" / "src" / "applypilot" / "discovery" / "jobspy.py"
 PIPELINE_PATH = Path(__file__).parent / "applypilot" / "src" / "applypilot" / "pipeline.py"
+LOGS_DIR = CONFIG_DIR / "logs"
 
 # Track running pipeline processes
 _pipeline_proc = None
+_pipeline_log_lock = threading.Lock()
 _pipeline_meta = {
     "stages": None,
     "resolved_stages": None,
@@ -72,6 +77,7 @@ _pipeline_meta = {
     "finished_at": None,
     "returncode": None,
     "output": "",
+    "output_lines": [],
     "output_captured": False,
 }
 DEFAULT_MIN_SCORE = int(APPLYPILOT_DEFAULTS.get("min_score", 7))
@@ -116,6 +122,71 @@ def _ensure_config_dir():
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Unable to create config directory {CONFIG_DIR}: {exc}") from exc
+
+
+def _decode_text_payload(payload: bytes, *, label: str) -> str:
+    for encoding in ("utf-8", "utf-16", "latin-1"):
+        try:
+            return payload.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    raise HTTPException(status_code=400, detail=f"Unable to decode {label} file as text")
+
+
+def _extract_resume_text_from_upload(filename: str, content_type: str | None, payload: bytes) -> tuple[str, str]:
+    suffix = Path(filename).suffix.lower()
+    if not suffix and content_type:
+        content_to_suffix = {
+            "text/plain": ".txt",
+            "application/pdf": ".pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+            "application/rtf": ".rtf",
+            "text/rtf": ".rtf",
+        }
+        suffix = content_to_suffix.get(content_type.lower(), "")
+
+    if suffix not in {".txt", ".pdf", ".docx", ".rtf"}:
+        raise HTTPException(status_code=400, detail="Unsupported resume file type, allowed: .txt, .pdf, .docx, .rtf")
+
+    if suffix == ".txt":
+        text = _decode_text_payload(payload, label="TXT")
+        return "txt", text
+
+    if suffix == ".rtf":
+        try:
+            from striprtf.striprtf import rtf_to_text
+        except ModuleNotFoundError as exc:
+            raise HTTPException(status_code=500, detail="Missing dependency striprtf, install striprtf in backend venv") from exc
+        rtf_raw = _decode_text_payload(payload, label="RTF")
+        return "rtf", rtf_to_text(rtf_raw)
+
+    if suffix == ".docx":
+        try:
+            from docx import Document
+        except ModuleNotFoundError as exc:
+            raise HTTPException(status_code=500, detail="Missing dependency python-docx, install python-docx in backend venv") from exc
+        try:
+            document = Document(io.BytesIO(payload))
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=f"Invalid DOCX file: {exc}") from exc
+        paragraphs = [p.text for p in document.paragraphs if p.text]
+        return "docx", "\n".join(paragraphs)
+
+    # suffix == ".pdf"
+    try:
+        from PyPDF2 import PdfReader
+    except ModuleNotFoundError as exc:
+        raise HTTPException(status_code=500, detail="Missing dependency PyPDF2, install PyPDF2 in backend venv") from exc
+    try:
+        reader = PdfReader(io.BytesIO(payload))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid PDF file: {exc}") from exc
+    pages = []
+    for page in reader.pages:
+        extracted = page.extract_text() or ""
+        if extracted:
+            pages.append(extracted)
+    return "pdf", "\n".join(pages)
 
 
 def _coerce_min_score(value, *, source: str) -> int:
@@ -374,6 +445,10 @@ def _default_board_sites() -> list[str]:
 def _default_profile() -> dict:
     return {
         "min_score": DEFAULT_MIN_SCORE,
+        "onboarding": {
+            "completed": False,
+            "completed_at": None,
+        },
         "personal": {
             "full_name": "",
             "preferred_name": "",
@@ -394,6 +469,27 @@ def _default_profile() -> dict:
     }
 
 
+def _normalize_onboarding(raw: object, *, source: str) -> dict:
+    status_code = 400 if source == "request" else 500
+    if raw is None:
+        return {"completed": False, "completed_at": None}
+    if not isinstance(raw, dict):
+        raise HTTPException(
+            status_code=status_code,
+            detail=f"onboarding must be an object in {source}",
+        )
+    completed = bool(raw.get("completed", False))
+    completed_at = raw.get("completed_at")
+    if completed_at in ("", None):
+        completed_at = None
+    elif not isinstance(completed_at, str):
+        raise HTTPException(
+            status_code=status_code,
+            detail=f"onboarding.completed_at must be a string or null in {source}",
+        )
+    return {"completed": completed, "completed_at": completed_at}
+
+
 def _default_searches() -> dict:
     default_boards = _default_board_sites()
     return {
@@ -412,6 +508,132 @@ def _get_profile_min_score_default() -> int:
     if raw is None:
         return DEFAULT_MIN_SCORE
     return _coerce_min_score(raw, source="profile")
+
+
+def _normalize_tail_count(raw_tail: Optional[int]) -> int:
+    if raw_tail is None:
+        return 200
+    try:
+        tail = int(raw_tail)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid tail value: {raw_tail!r}") from exc
+    if tail < 1:
+        raise HTTPException(status_code=400, detail=f"tail must be >= 1, got {tail}")
+    return min(tail, 5000)
+
+
+def _extract_timestamp(line: str) -> str:
+    match = re.match(r"^\s*(\d{4}-\d{2}-\d{2}[T ][0-9:.\-+Z]+)", line or "")
+    if not match:
+        return ""
+    raw = match.group(1).strip()
+    candidate = raw.replace(" ", "T")
+    if candidate.endswith("Z"):
+        candidate = candidate[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(candidate)
+    except ValueError:
+        return ""
+    return parsed.isoformat()
+
+
+def _serialize_log_line(text: str, line_no: int) -> dict:
+    clean = text.rstrip("\r\n")
+    return {
+        "line_no": line_no,
+        "text": clean,
+        "timestamp": _extract_timestamp(clean),
+    }
+
+
+def _append_pipeline_output_line(text: str, proc: Optional[subprocess.Popen] = None) -> None:
+    global _pipeline_proc
+    clean = text.rstrip("\r\n")
+    if not clean:
+        return
+    with _pipeline_log_lock:
+        if proc is not None and _pipeline_proc is not proc:
+            return
+        lines = _pipeline_meta.setdefault("output_lines", [])
+        lines.append(clean)
+        if _pipeline_meta.get("output"):
+            _pipeline_meta["output"] = f"{_pipeline_meta['output']}\n{clean}"
+        else:
+            _pipeline_meta["output"] = clean
+
+
+def _capture_pipeline_output(proc: subprocess.Popen) -> None:
+    stream = proc.stdout
+    if stream is None:
+        return
+    try:
+        for raw in iter(stream.readline, ""):
+            if raw == "":
+                break
+            _append_pipeline_output_line(raw, proc)
+        leftover = stream.read()
+        if leftover:
+            for line in leftover.splitlines():
+                _append_pipeline_output_line(line, proc)
+    except Exception as exc:
+        _append_pipeline_output_line(f"[server] Failed reading pipeline output: {exc}", proc)
+    finally:
+        try:
+            stream.close()
+        except OSError:
+            pass
+
+
+def _start_pipeline_output_capture(proc: subprocess.Popen) -> None:
+    if proc.stdout is None:
+        return
+    reader = threading.Thread(target=_capture_pipeline_output, args=(proc,), daemon=True)
+    reader.start()
+
+
+def _pipeline_lines_snapshot() -> list[str]:
+    with _pipeline_log_lock:
+        lines = _pipeline_meta.get("output_lines")
+        if not isinstance(lines, list):
+            return []
+        return list(lines)
+
+
+def _refresh_pipeline_state() -> bool:
+    global _pipeline_proc
+    if _pipeline_proc is None:
+        return False
+    running = _pipeline_proc.poll() is None
+    if not running:
+        if not _pipeline_meta.get("output_captured"):
+            stream = _pipeline_proc.stdout
+            if stream is not None:
+                try:
+                    tail = stream.read()
+                except (OSError, ValueError):
+                    tail = ""
+                if tail:
+                    for line in tail.splitlines():
+                        _append_pipeline_output_line(line, _pipeline_proc)
+        if not _pipeline_meta.get("finished_at"):
+            _pipeline_meta["finished_at"] = datetime.now(timezone.utc).isoformat()
+        if _pipeline_meta.get("returncode") is None:
+            _pipeline_meta["returncode"] = _pipeline_proc.returncode
+        _pipeline_meta["output_captured"] = True
+    return running
+
+
+def _tail_file_lines(path: Path, tail: int) -> tuple[int, list[dict]]:
+    total = 0
+    tail_rows: deque[tuple[int, str]] = deque(maxlen=tail)
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as handle:
+            for total, raw in enumerate(handle, start=1):
+                tail_rows.append((total, raw.rstrip("\r\n")))
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"Failed reading log file {path}: {exc}") from exc
+
+    return total, [_serialize_log_line(text, line_no) for line_no, text in tail_rows]
 
 
 def _initialize_jobs_db():
@@ -453,7 +675,6 @@ def _initialize_jobs_db():
         raise HTTPException(status_code=500, detail=f"Failed to initialize database {DB_PATH}: {exc}") from exc
     finally:
         conn.close()
-
 
 # ═══ SERVE FRONTEND ═══
 
@@ -624,7 +845,60 @@ async def get_job_detail(url: str):
     if job.get("cover_letter_path") and os.path.exists(job["cover_letter_path"]):
         with open(job["cover_letter_path"]) as f:
             job["cover_letter_text"] = f.read()
+    # Check for PDF versions
+    if job.get("tailored_resume_path"):
+        pdf_path = job["tailored_resume_path"].replace(".txt", ".pdf")
+        if os.path.exists(pdf_path):
+            job["resume_pdf_available"] = True
+    if job.get("cover_letter_path"):
+        cl_pdf_path = job["cover_letter_path"].replace(".txt", ".pdf")
+        if os.path.exists(cl_pdf_path):
+            job["cover_letter_pdf_available"] = True
     return job
+
+
+@app.get("/api/documents")
+async def get_documents():
+    """Return all jobs that have generated PDFs (resume or cover letter)."""
+    if not DB_PATH.exists():
+        return {"documents": []}
+    conn = get_db()
+    c = conn.cursor()
+    c.execute(
+        """SELECT url, title, site, tailored_resume_path, cover_letter_path
+           FROM jobs
+           WHERE tailored_resume_path IS NOT NULL OR cover_letter_path IS NOT NULL"""
+    )
+    docs = []
+    for row in c.fetchall():
+        j = row_to_dict(row)
+        company = (j.get("site") or "").replace("_", " ").title()
+        entry = {"url": j["url"], "title": j["title"], "company": company, "pdfs": []}
+        if j.get("tailored_resume_path"):
+            pdf_path = j["tailored_resume_path"].replace(".txt", ".pdf")
+            if os.path.exists(pdf_path):
+                entry["pdfs"].append({"type": "resume", "path": pdf_path, "name": Path(pdf_path).name})
+        if j.get("cover_letter_path"):
+            cl_pdf = j["cover_letter_path"].replace(".txt", ".pdf")
+            if os.path.exists(cl_pdf):
+                entry["pdfs"].append({"type": "cover_letter", "path": cl_pdf, "name": Path(cl_pdf).name})
+        if entry["pdfs"]:
+            docs.append(entry)
+    conn.close()
+    return {"documents": docs}
+
+
+@app.get("/api/files/pdf")
+async def serve_pdf(path: str):
+    """Serve a PDF file from the applypilot config directory."""
+    file_path = Path(path)
+    if not file_path.is_absolute():
+        file_path = CONFIG_DIR / path
+    if not str(file_path).startswith(str(CONFIG_DIR)):
+        raise HTTPException(status_code=403, detail="Access denied")
+    if not file_path.exists() or not file_path.suffix == ".pdf":
+        raise HTTPException(status_code=404, detail="PDF not found")
+    return FileResponse(file_path, media_type="application/pdf", filename=file_path.name)
 
 
 # ═══ BOARDS ═══
@@ -768,6 +1042,7 @@ async def get_profile():
         return _default_profile()
     data = _load_profile_json_required()
     data["min_score"] = _coerce_min_score(data.get("min_score", DEFAULT_MIN_SCORE), source="profile")
+    data["onboarding"] = _normalize_onboarding(data.get("onboarding"), source="profile")
     for key, value in _default_profile().items():
         if key not in data:
             data[key] = value
@@ -779,14 +1054,16 @@ async def save_profile(data: dict):
     if not isinstance(data, dict):
         raise HTTPException(status_code=400, detail="Profile payload must be a JSON object")
     min_score = _coerce_min_score(data.get("min_score", DEFAULT_MIN_SCORE), source="request")
+    onboarding = _normalize_onboarding(data.get("onboarding"), source="request")
     payload = dict(data)
     payload["min_score"] = min_score
+    payload["onboarding"] = onboarding
     _ensure_config_dir()
     try:
         PROFILE_PATH.write_text(json.dumps(payload, indent=2))
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed writing profile to {PROFILE_PATH}: {exc}") from exc
-    return {"ok": True, "min_score": min_score}
+    return {"ok": True, "min_score": min_score, "onboarding": onboarding}
 
 
 @app.get("/api/config/searches")
@@ -864,6 +1141,40 @@ async def save_resume(data: dict):
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed writing resume to {RESUME_PATH}: {exc}") from exc
     return {"ok": True, "chars": len(text)}
+
+
+@app.post("/api/config/resume/upload")
+async def upload_resume(file: UploadFile = File(...)):
+    filename = (file.filename or "").strip()
+    if not filename:
+        raise HTTPException(status_code=400, detail="Missing uploaded file name")
+
+    try:
+        payload = await file.read()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed reading uploaded file: {exc}") from exc
+
+    if not payload:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    file_type, extracted_text = _extract_resume_text_from_upload(filename, file.content_type, payload)
+    text = extracted_text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="No extractable text found in uploaded resume")
+
+    _ensure_config_dir()
+    try:
+        RESUME_PATH.write_text(text)
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"Failed writing resume to {RESUME_PATH}: {exc}") from exc
+
+    return {
+        "ok": True,
+        "filename": filename,
+        "type": file_type,
+        "chars": len(text),
+        "text": text,
+    }
 
 
 @app.get("/api/config/capsolver")
@@ -1055,13 +1366,14 @@ async def run_pipeline(request: Request):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            bufsize=1,
             env=env,
         )
     else:
         if not run_stages:
             run_stages = [default_stage]
         run_stage_text = ",".join(run_stages)
-        run_cmd = [str(APPLYPILOT_BIN), "run", "--stages", run_stage_text, "--min-score", str(resolved_min_score), "--workers", str(resolved_workers)]
+        run_cmd = [str(APPLYPILOT_BIN), "run"] + run_stages + ["--min-score", str(resolved_min_score), "--workers", str(resolved_workers)]
         if resolved_dry_run:
             run_cmd.append("--dry-run")
         if includes_apply:
@@ -1077,6 +1389,7 @@ async def run_pipeline(request: Request):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                bufsize=1,
                 env=env,
             )
         else:
@@ -1086,6 +1399,7 @@ async def run_pipeline(request: Request):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                bufsize=1,
                 env=env,
             )
 
@@ -1100,8 +1414,10 @@ async def run_pipeline(request: Request):
         "finished_at": None,
         "returncode": None,
         "output": "",
+        "output_lines": [],
         "output_captured": False,
     }
+    _start_pipeline_output_capture(_pipeline_proc)
     return {
         "ok": True,
         "pid": _pipeline_proc.pid,
@@ -1118,6 +1434,7 @@ async def run_pipeline(request: Request):
 async def pipeline_status():
     global _pipeline_proc, _pipeline_meta
     if _pipeline_proc is None:
+        output_lines = _pipeline_lines_snapshot()
         return {
             "running": False,
             "pid": None,
@@ -1130,13 +1447,10 @@ async def pipeline_status():
             "finished_at": _pipeline_meta.get("finished_at"),
             "returncode": _pipeline_meta.get("returncode"),
             "output": _pipeline_meta.get("output", ""),
+            "output_line_count": len(output_lines),
         }
-    running = _pipeline_proc.poll() is None
-    if not running and not _pipeline_meta.get("output_captured"):
-        _pipeline_meta["output"] = _pipeline_proc.stdout.read() if _pipeline_proc.stdout else ""
-        _pipeline_meta["output_captured"] = True
-        _pipeline_meta["finished_at"] = datetime.now(timezone.utc).isoformat()
-        _pipeline_meta["returncode"] = _pipeline_proc.returncode
+    running = _refresh_pipeline_state()
+    output_lines = _pipeline_lines_snapshot()
     return {
         "running": running,
         "pid": _pipeline_proc.pid if _pipeline_proc else None,
@@ -1149,6 +1463,98 @@ async def pipeline_status():
         "finished_at": _pipeline_meta.get("finished_at"),
         "returncode": _pipeline_meta.get("returncode"),
         "output": _pipeline_meta.get("output", ""),
+        "output_line_count": len(output_lines),
+    }
+
+
+@app.get("/api/logs")
+async def get_logs(tail: int = Query(200)):
+    resolved_tail = _normalize_tail_count(tail)
+    running = _refresh_pipeline_state()
+    pipeline_lines_all = _pipeline_lines_snapshot()
+    pipeline_start = max(0, len(pipeline_lines_all) - resolved_tail)
+    pipeline_lines = [
+        _serialize_log_line(line, idx + 1)
+        for idx, line in enumerate(pipeline_lines_all[pipeline_start:], start=pipeline_start)
+    ]
+
+    log_files: list[dict] = []
+    if LOGS_DIR.exists():
+        if not LOGS_DIR.is_dir():
+            raise HTTPException(status_code=500, detail=f"Logs path is not a directory: {LOGS_DIR}")
+        try:
+            file_paths = [p for p in LOGS_DIR.rglob("*") if p.is_file()]
+        except OSError as exc:
+            raise HTTPException(status_code=500, detail=f"Failed listing log files in {LOGS_DIR}: {exc}") from exc
+        try:
+            file_paths.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        except OSError as exc:
+            raise HTTPException(status_code=500, detail=f"Failed sorting log files in {LOGS_DIR}: {exc}") from exc
+        for path in file_paths:
+            try:
+                stats = path.stat()
+            except OSError as exc:
+                raise HTTPException(status_code=500, detail=f"Failed reading metadata for log file {path}: {exc}") from exc
+            total_lines, lines = _tail_file_lines(path, resolved_tail)
+            log_files.append({
+                "name": path.name,
+                "path": str(path),
+                "modified_at": datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc).isoformat(),
+                "size_bytes": stats.st_size,
+                "total_lines": total_lines,
+                "lines": lines,
+            })
+
+    return {
+        "tail": resolved_tail,
+        "pipeline": {
+            "running": running,
+            "pid": _pipeline_proc.pid if _pipeline_proc else None,
+            "stages": _pipeline_meta.get("stages"),
+            "resolved_stages": _pipeline_meta.get("resolved_stages"),
+            "started_at": _pipeline_meta.get("started_at"),
+            "finished_at": _pipeline_meta.get("finished_at"),
+            "returncode": _pipeline_meta.get("returncode"),
+            "total_lines": len(pipeline_lines_all),
+            "lines": pipeline_lines,
+            "output": _pipeline_meta.get("output", ""),
+        },
+        "log_files": log_files,
+    }
+
+
+@app.get("/api/logs/stream")
+async def stream_logs(since: int = Query(0), tail: int = Query(200)):
+    if since < 0:
+        raise HTTPException(status_code=400, detail=f"since must be >= 0, got {since}")
+    resolved_tail = _normalize_tail_count(tail)
+    running = _refresh_pipeline_state()
+    pipeline_lines_all = _pipeline_lines_snapshot()
+    total = len(pipeline_lines_all)
+
+    start = min(since, total)
+    if start > total:
+        start = total
+    lines = pipeline_lines_all[start:]
+    if len(lines) > resolved_tail:
+        start = total - resolved_tail
+        lines = pipeline_lines_all[start:]
+
+    payload_lines = [
+        _serialize_log_line(line, idx + 1)
+        for idx, line in enumerate(lines, start=start)
+    ]
+    return {
+        "running": running,
+        "pid": _pipeline_proc.pid if _pipeline_proc else None,
+        "since": start,
+        "next_since": total,
+        "lines": payload_lines,
+        "stages": _pipeline_meta.get("stages"),
+        "resolved_stages": _pipeline_meta.get("resolved_stages"),
+        "started_at": _pipeline_meta.get("started_at"),
+        "finished_at": _pipeline_meta.get("finished_at"),
+        "returncode": _pipeline_meta.get("returncode"),
     }
 
 
