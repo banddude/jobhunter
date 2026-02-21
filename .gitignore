@@ -2,8 +2,16 @@
 __pycache__/
 .venv/
 *.db
+*.db-*
 .env
 node_modules/
 .DS_Store
 *.egg-info/
-applypilot/
+.pytest_cache/
+resume.txt
+NOTES.md
+TMUX_AGENT_INSTRUCTIONS.md
+applypilot/.venv/
+applypilot/.env
+dist/
+out/

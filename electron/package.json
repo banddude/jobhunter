@@ -1,0 +1,45 @@
+{
+  "name": "applypilot",
+  "version": "1.0.0",
+  "description": "AI powered job application pipeline",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build:dmg": "electron-builder --mac dmg"
+  },
+  "author": "Mike Shaffer",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.applypilot.desktop",
+    "productName": "ApplyPilot",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": ["dmg", "zip"]
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../server.py",
+        "to": "server.py"
+      },
+      {
+        "from": "../ui-prototype.html",
+        "to": "ui-prototype.html"
+      },
+      {
+        "from": "../applypilot/",
+        "to": "applypilot/",
+        "filter": ["**/*", "!.venv/**", "!__pycache__/**", "!*.egg-info/**"]
+      }
+    ]
+  }
+}

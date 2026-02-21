@@ -1591,6 +1591,29 @@ async def system_check():
         "name": "Gemini CLI",
         "detail": gemini_path if gemini_path else "Not found on PATH",
         "ok": bool(gemini_path),
+        "install": "npm install -g @anthropic-ai/gemini-cli" if not gemini_path else "",
+        "required": True,
+        "purpose": "Required for job scoring, resume tailoring, and cover letters",
+    })
+    # Claude Code CLI
+    claude_path = shutil.which("claude")
+    checks.append({
+        "name": "Claude Code CLI",
+        "detail": claude_path if claude_path else "Not found on PATH",
+        "ok": bool(claude_path),
+        "install": "npm install -g @anthropic-ai/claude-code" if not claude_path else "",
+        "required": False,
+        "purpose": "Optional, needed only for auto-apply (browser automation)",
+    })
+    # Node.js (needed for both CLIs)
+    node_path = shutil.which("node")
+    checks.append({
+        "name": "Node.js",
+        "detail": node_path if node_path else "Not found on PATH",
+        "ok": bool(node_path),
+        "install": "https://nodejs.org" if not node_path else "",
+        "required": True,
+        "purpose": "Required runtime for Gemini CLI and Claude Code CLI",
     })
     return {"checks": checks}
 

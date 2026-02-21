@@ -2420,12 +2420,29 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       <div class="setup-step-dot" id="dot-1"></div>
       <div class="setup-step-dot" id="dot-2"></div>
       <div class="setup-step-dot" id="dot-3"></div>
+      <div class="setup-step-dot" id="dot-4"></div>
     </div>
     <div id="setup-inline-error" class="setup-inline-error" style="display:none"></div>
 
-    <!-- Step 1: Profile Basics -->
+    <!-- Step 0: Prerequisites -->
     <div class="setup-step" id="step-0">
-      <div class="setup-step-title">Step 1, Profile Basics</div>
+      <div class="setup-step-title">Step 1, Prerequisites</div>
+      <div class="setup-step-desc">Checking that required tools are installed on your system.</div>
+      <div id="prereq-checks" style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
+        <div style="color:var(--text-3);font-size:13px">Checking...</div>
+      </div>
+      <div id="prereq-recheck" style="margin-top:8px">
+        <button class="btn btn-sm btn-ghost" onclick="runPrereqChecks()">Re-check</button>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-ghost" onclick="closeSetup()">Cancel</button>
+        <button class="btn btn-primary" id="prereq-continue-btn" onclick="nextSetupStep()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Profile Basics -->
+    <div class="setup-step" id="step-1" style="display:none">
+      <div class="setup-step-title">Step 2, Profile Basics</div>
       <div class="setup-step-desc">Tell ApplyPilot who you are and where you want to work.</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Full Name</label><input id="setup-profile-name" class="form-input" placeholder="John Doe"></div>
@@ -2441,9 +2458,9 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- Step 2: Resume -->
-    <div class="setup-step" id="step-1" style="display:none">
-      <div class="setup-step-title">Step 2, Resume</div>
+    <!-- Step 3: Resume -->
+    <div class="setup-step" id="step-2" style="display:none">
+      <div class="setup-step-title">Step 3, Resume</div>
       <div class="setup-step-desc">Upload your resume file, or paste your resume directly.</div>
       <input id="setup-resume-file" type="file" accept=".pdf,.docx,.rtf,.txt,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/rtf,text/rtf" hidden>
       <div class="drop-zone" id="setup-resume-drop-zone">
@@ -2462,9 +2479,9 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- Step 3: Search Preferences -->
-    <div class="setup-step" id="step-2" style="display:none">
-      <div class="setup-step-title">Step 3, Search Preferences</div>
+    <!-- Step 4: Search Preferences -->
+    <div class="setup-step" id="step-3" style="display:none">
+      <div class="setup-step-title">Step 4, Search Preferences</div>
       <div class="setup-step-desc">Choose job titles, work mode, salary target, and which sites to search.</div>
       <div class="form-group">
         <label class="form-label">Job Titles, one per line</label>
@@ -2497,9 +2514,9 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- Step 4: Review -->
-    <div class="setup-step" id="step-3" style="display:none">
-      <div class="setup-step-title">Step 4, Review and Save</div>
+    <!-- Step 5: Review -->
+    <div class="setup-step" id="step-4" style="display:none">
+      <div class="setup-step-title">Step 5, Review and Save</div>
       <div class="setup-step-desc">Confirm your setup details, then save configuration.</div>
       <div id="setup-review-summary" class="capsolver-help">Loading review summary...</div>
       <div class="setup-actions">
@@ -5281,16 +5298,20 @@ function setupValue(id) {
 
 function validateSetupStep(step) {
   if (step === 0) {
+    if (_prereqHasRequiredFailure) return 'Required tools are missing. Install them and click Re-check.';
+    return '';
+  }
+  if (step === 1) {
     if (!setupValue('setup-profile-name')) return 'Name is required.';
     if (!setupValue('setup-profile-email')) return 'Email is required.';
     if (!setupValue('setup-profile-location')) return 'Location is required.';
     return '';
   }
-  if (step === 1) {
+  if (step === 2) {
     if (!setupValue('setup-resume-text')) return 'Resume text is required.';
     return '';
   }
-  if (step === 2) {
+  if (step === 3) {
     clearFieldError('setup-salary-min');
     clearFieldError('setup-salary-max');
     clearFieldError('setup-board-pills');
@@ -5319,6 +5340,41 @@ function validateSetupStep(step) {
     return '';
   }
   return '';
+}
+
+let _prereqHasRequiredFailure = false;
+
+async function runPrereqChecks() {
+  const container = byId('prereq-checks');
+  if (!container) return;
+  container.innerHTML = '<div style="color:var(--text-3);font-size:13px">Checking...</div>';
+  _prereqHasRequiredFailure = false;
+  const data = await api('/system/check', null, {silent: true});
+  if (!data || !Array.isArray(data.checks)) {
+    container.innerHTML = '<div style="color:var(--red);font-size:13px">Unable to reach server for system check.</div>';
+    _prereqHasRequiredFailure = true;
+    return;
+  }
+  const toolChecks = data.checks.filter(c => c.name === 'Gemini CLI' || c.name === 'Claude Code CLI' || c.name === 'Node.js');
+  let html = '';
+  for (const check of toolChecks) {
+    const icon = check.ok ? '<span style="color:var(--green);font-weight:600">&#10003;</span>' : (check.required ? '<span style="color:var(--red);font-weight:600">&#10007;</span>' : '<span style="color:var(--yellow);font-weight:600">&#9888;</span>');
+    const status = check.ok ? '<span style="color:var(--green)">Installed</span>' : (check.required ? '<span style="color:var(--red)">Missing (required)</span>' : '<span style="color:var(--yellow)">Missing (optional)</span>');
+    let installHint = '';
+    if (!check.ok && check.install) {
+      installHint = '<div style="margin-top:4px;font-size:11px;color:var(--text-3);font-family:monospace;background:var(--bg-2);padding:4px 8px;border-radius:4px">' + check.install + '</div>';
+    }
+    const purpose = check.purpose ? '<div style="font-size:11px;color:var(--text-3)">' + check.purpose + '</div>' : '';
+    html += '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--bg-2);border-radius:6px">'
+      + '<div style="margin-top:2px">' + icon + '</div>'
+      + '<div style="flex:1"><div style="font-size:13px;font-weight:500">' + check.name + ' ' + status + '</div>'
+      + (check.ok ? '<div style="font-size:11px;color:var(--text-3)">' + check.detail + '</div>' : '')
+      + purpose + installHint + '</div></div>';
+    if (!check.ok && check.required) _prereqHasRequiredFailure = true;
+  }
+  container.innerHTML = html;
+  const btn = byId('prereq-continue-btn');
+  if (btn) btn.disabled = _prereqHasRequiredFailure;
 }
 
 function buildSetupDefaultsPayload() {
@@ -5434,7 +5490,7 @@ async function openSetup() {
       const onFile = async (file) => {
         if (!file) return;
         const loaded = await loadSetupResumeFromFile(file);
-        if (loaded && setupStep === 3) {
+        if (loaded && setupStep === 4) {
           renderSetupReview();
         }
         fileInput.value = '';
@@ -5463,6 +5519,7 @@ async function openSetup() {
   updateSetupStep();
   renderSetupReview();
   byId('setup-overlay').classList.add('open');
+  runPrereqChecks();
 }
 
 function closeSetup() {
@@ -5476,9 +5533,9 @@ async function nextSetupStep() {
     return;
   }
   setSetupInlineError('');
-  if (setupStep < 3) {
+  if (setupStep < 4) {
     setupStep++;
-    if (setupStep === 3) renderSetupReview();
+    if (setupStep === 4) renderSetupReview();
     updateSetupStep();
   }
 }
@@ -5488,7 +5545,7 @@ function prevSetupStep() {
 }
 
 async function finishSetup() {
-  const stepErrors = [0, 1, 2].map(validateSetupStep).filter(Boolean);
+  const stepErrors = [0, 1, 2, 3].map(validateSetupStep).filter(Boolean);
   if (stepErrors.length) {
     setSetupInlineError(stepErrors[0]);
     return;
@@ -5516,7 +5573,7 @@ async function finishSetup() {
 }
 
 function updateSetupStep() {
-  for (let i = 0; i <= 3; i++) {
+  for (let i = 0; i <= 4; i++) {
     byId('step-' + i).style.display = i === setupStep ? 'block' : 'none';
     const dot = byId('dot-' + i);
     dot.className = 'setup-step-dot' + (i < setupStep ? ' done' : i === setupStep ? ' current' : '');
