@@ -86,6 +86,10 @@ jobhunter/
 - **applypilot/**: The core pipeline library, installable via pip. Handles job scraping, LLM calls, resume generation, and browser automation
 - **electron/**: Thin Electron wrapper that spawns the Python server and loads the UI in a native window
 
+## Acknowledgments
+
+The core pipeline library powering ApplyPilot was created by [Pickle-Pixel](https://github.com/Pickle-Pixel/ApplyPilot). This project wraps it in a web UI and native macOS desktop app for a more accessible experience.
+
 ## License
 
 [AGPL-3.0](LICENSE)
