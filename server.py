@@ -1676,8 +1676,12 @@ async def system_checks():
 
 
 if __name__ == "__main__":
+    import argparse
     import uvicorn
-    print(f"Starting ApplyPilot UI at http://localhost:8888")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=int(os.environ.get("APPLYPILOT_PORT", 8888)))
+    args = parser.parse_args()
+    print(f"Starting ApplyPilot UI at http://localhost:{args.port}")
     print(f"Database: {DB_PATH} ({'exists' if DB_PATH.exists() else 'not found'})")
     print(f"Config: {CONFIG_DIR}")
-    uvicorn.run(app, host="0.0.0.0", port=8888)
+    uvicorn.run(app, host="0.0.0.0", port=args.port)

@@ -1916,6 +1916,15 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   }
 }
 </style>
+<script>
+if (window.applypilot && window.applypilot.isElectron) {
+  document.documentElement.style.setProperty('--header-h', '0px');
+  document.addEventListener('DOMContentLoaded', function() {
+    var tb = document.querySelector('.titlebar');
+    if (tb) tb.style.display = 'none';
+  });
+}
+</script>
 </head>
 <body>
 
